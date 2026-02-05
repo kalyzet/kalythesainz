@@ -29,18 +29,68 @@ const mockThree = {
         intensity: 0.4,
         color: { setHex: jest.fn() },
     })),
-    BoxGeometry: jest.fn(),
-    SphereGeometry: jest.fn(),
-    PlaneGeometry: jest.fn(),
-    MeshStandardMaterial: jest.fn(),
+    BoxGeometry: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    SphereGeometry: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    PlaneGeometry: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    CylinderGeometry: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    ConeGeometry: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    MeshStandardMaterial: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    MeshBasicMaterial: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    MeshPhongMaterial: jest.fn().mockImplementation(() => ({
+        dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
     Mesh: jest.fn().mockImplementation(() => ({
         position: { set: jest.fn(), x: 0, y: 0, z: 0 },
         rotation: { set: jest.fn(), x: 0, y: 0, z: 0 },
         scale: { set: jest.fn(), x: 1, y: 1, z: 1 },
+        visible: true,
         dispose: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+        geometry: null,
+        material: null,
     })),
-    Vector3: jest.fn().mockImplementation((x = 0, y = 0, z = 0) => ({ x, y, z })),
-    Color: jest.fn().mockImplementation(() => ({ setHex: jest.fn() })),
+    Vector3: jest.fn().mockImplementation((x = 0, y = 0, z = 0) => ({
+        x,
+        y,
+        z,
+        set: jest.fn(),
+        copy: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    Euler: jest.fn().mockImplementation((x = 0, y = 0, z = 0) => ({
+        x,
+        y,
+        z,
+        set: jest.fn(),
+        copy: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
+    Color: jest.fn().mockImplementation(() => ({
+        setHex: jest.fn(),
+        clone: jest.fn().mockReturnThis(),
+    })),
 };
 
 // Make Three.js available globally for tests
