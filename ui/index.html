@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ Framework - Development Test</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                background: #1a1a1a;
+                color: white;
+            }
+
+            .container {
+                display: flex;
+                gap: 20px;
+                height: calc(100vh - 40px);
+            }
+
+            .viewport {
+                flex: 1;
+                border: 2px solid #333;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .tools {
+                width: 300px;
+                background: #2a2a2a;
+                border-radius: 8px;
+                padding: 20px;
+            }
+
+            .tool-section {
+                margin-bottom: 20px;
+            }
+
+            .tool-section h3 {
+                margin: 0 0 10px 0;
+                color: #4caf50;
+            }
+
+            #canvas-container {
+                width: 100%;
+                height: 100%;
+            }
+
+            button {
+                background: #4caf50;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                margin: 2px;
+            }
+
+            button:hover {
+                background: #45a049;
+            }
+
+            .error {
+                color: #ff6b6b;
+                background: #2a1a1a;
+                padding: 10px;
+                border-radius: 4px;
+                margin: 10px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>KALYTHESAINZ Framework - Development Test</h1>
+
+        <div class="container">
+            <div class="viewport">
+                <div id="canvas-container"></div>
+            </div>
+
+            <div class="tools">
+                <div class="tool-section">
+                    <h3>Scene Controls</h3>
+                    <button onclick="initScene()">Initialize Scene</button>
+                    <button onclick="clearScene()">Clear Scene</button>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Add Objects</h3>
+                    <button onclick="addBox()">Add Box</button>
+                    <button onclick="addSphere()">Add Sphere</button>
+                    <button onclick="addPlane()">Add Plane</button>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Lighting</h3>
+                    <button onclick="addSunLight()">Add Sun Light</button>
+                    <button onclick="addAmbientLight()">Add Ambient Light</button>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Scene Tree</h3>
+                    <div id="scene-tree"></div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Inspector</h3>
+                    <div id="inspector"></div>
+                </div>
+
+                <div id="error-log"></div>
+            </div>
+        </div>
+
+        <script type="module">
+            // Import Three.js from CDN
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+            // Make THREE available globally for the framework
+            window.THREE = THREE;
+
+            // Import KALYTHESAINZ framework (will be available once implemented)
+            // import { Scene, Box, Sphere, Plane, Light, SceneTree, Inspector } from '../index.js';
+
+            let currentScene = null;
+            let sceneTree = null;
+            let inspector = null;
+
+            // Global functions for testing
+            window.initScene = function () {
+                try {
+                    console.log('Initializing scene...');
+                    // currentScene = Scene.init('canvas-container');
+                    // sceneTree = new SceneTree('scene-tree');
+                    // inspector = new Inspector('inspector');
+                    logMessage('Scene initialized successfully', 'success');
+                } catch (error) {
+                    logError('Failed to initialize scene: ' + error.message);
+                }
+            };
+
+            window.clearScene = function () {
+                try {
+                    if (currentScene) {
+                        // currentScene.clear();
+                        logMessage('Scene cleared', 'success');
+                    }
+                } catch (error) {
+                    logError('Failed to clear scene: ' + error.message);
+                }
+            };
+
+            window.addBox = function () {
+                try {
+                    if (currentScene) {
+                        // const box = Box.create(1, 1, 1);
+                        // currentScene.add(box);
+                        logMessage('Box added to scene', 'success');
+                    }
+                } catch (error) {
+                    logError('Failed to add box: ' + error.message);
+                }
+            };
+
+            window.addSphere = function () {
+                try {
+                    if (currentScene) {
+                        // const sphere = Sphere.create(0.5, 32);
+                        // currentScene.add(sphere);
+                        logMessage('Sphere added to scene', 'success');
+                    }
+                } catch (error) {
+                    logError('Failed to add sphere: ' + error.message);
+                }
+            };
+
+            window.addPlane = function () {
+                try {
+                    if (currentScene) {
+                        // const plane = Plane.create(2, 2);
+                        // currentScene.add(plane);
+                        logMessage('Plane added to scene', 'success');
+                    }
+                } catch (error) {
+                    logError('Failed to add plane: ' + error.message);
+                }
+            };
+
+            window.addSunLight = function () {
+                try {
+                    if (currentScene) {
+                        // Light.sun();
+                        logMessage('Sun light added', 'success');
+                    }
+                } catch (error) {
+                    logError('Failed to add sun light: ' + error.message);
+                }
+            };
+
+            window.addAmbientLight = function () {
+                try {
+                    if (currentScene) {
+                        // Light.ambient();
+                        logMessage('Ambient light added', 'success');
+                    }
+                } catch (error) {
+                    logError('Failed to add ambient light: ' + error.message);
+                }
+            };
+
+            function logMessage(message, type = 'info') {
+                console.log(message);
+                const errorLog = document.getElementById('error-log');
+                const div = document.createElement('div');
+                div.textContent = message;
+                div.style.color =
+                    type === 'success' ? '#4CAF50' : type === 'error' ? '#ff6b6b' : '#fff';
+                div.style.padding = '5px';
+                div.style.borderBottom = '1px solid #333';
+                errorLog.appendChild(div);
+
+                // Keep only last 10 messages
+                while (errorLog.children.length > 10) {
+                    errorLog.removeChild(errorLog.firstChild);
+                }
+            }
+
+            function logError(message) {
+                console.error(message);
+                logMessage(message, 'error');
+            }
+
+            // Test Three.js loading
+            console.log('Three.js version:', THREE.REVISION);
+            logMessage('Three.js loaded successfully (version ' + THREE.REVISION + ')', 'success');
+            logMessage('Framework ready for development', 'info');
+        </script>
+    </body>
+</html>
