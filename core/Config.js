@@ -21,7 +21,7 @@ export class Config {
             fov: 75,
             near: 0.1,
             far: 1000,
-            aspect: window.innerWidth / window.innerHeight,
+            aspect: typeof window !== 'undefined' ? window.innerWidth / window.innerHeight : 16 / 9,
         },
         scene: {
             background: 0x222222,

@@ -104,6 +104,94 @@ export class Scene {
     }
 
     /**
+     * Synchronize framework state with underlying Three.js scene
+     * Call this after directly manipulating the Three.js scene
+     * Detects objects added/removed directly to Three.js scene
+     * @returns {object} Synchronization report
+     */
+    syncFromThree() {
+        if (this.#isDisposed) {
+            throw new Error('Cannot sync from disposed scene');
+        }
+
+        const report = {
+            added: [],
+            removed: [],
+            unchanged: this.#objects.size,
+        };
+
+        // Find objects in Three.js scene that aren't tracked
+        const trackedThreeObjects = new Set(
+            Array.from(this.#objects.values()).map((data) => data.threeObject),
+        );
+
+        this.#threeScene.children.forEach((child) => {
+            // Skip lights and cameras
+            if (child.isLight || child.isCamera) {
+                return;
+            }
+
+            // Check if this Three.js object is tracked
+            if (!trackedThreeObjects.has(child)) {
+                // Found untracked object - add it to our tracking
+                const objectId = child.uuid;
+                const wrapper = child.userData._kalythesainzWrapper || null;
+
+                this.#objects.set(objectId, {
+                    id: objectId,
+                    object: wrapper || child,
+                    threeObject: child,
+                    addedAt: Date.now(),
+                });
+
+                report.added.push(objectId);
+                report.unchanged--;
+            }
+        });
+
+        // Find tracked objects that are no longer in Three.js scene
+        for (const [objectId, objectData] of this.#objects.entries()) {
+            if (!this.#threeScene.children.includes(objectData.threeObject)) {
+                this.#objects.delete(objectId);
+                report.removed.push(objectId);
+                report.unchanged--;
+            }
+        }
+
+        // Emit sync event if changes detected
+        if (report.added.length > 0 || report.removed.length > 0) {
+            EventBus.publish('scene:synced', {
+                scene: this,
+                report,
+                timestamp: Date.now(),
+            });
+        }
+
+        return report;
+    }
+
+    /**
+     * Enable automatic synchronization with Three.js scene
+     * Periodically checks for direct manipulations
+     * @param {boolean} enabled - Whether to enable auto-sync
+     * @param {number} interval - Sync interval in milliseconds (default: 100)
+     */
+    setAutoSync(enabled, interval = 100) {
+        if (enabled) {
+            if (!this._syncInterval) {
+                this._syncInterval = setInterval(() => {
+                    this.syncFromThree();
+                }, interval);
+            }
+        } else {
+            if (this._syncInterval) {
+                clearInterval(this._syncInterval);
+                this._syncInterval = null;
+            }
+        }
+    }
+
+    /**
      * Get the renderer
      * @returns {Renderer} Renderer instance
      */

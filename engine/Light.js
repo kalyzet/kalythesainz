@@ -40,6 +40,33 @@ export class Light {
     }
 
     /**
+     * Synchronize framework state with underlying Three.js light
+     * Call this after directly manipulating the Three.js light
+     * @returns {object} Current light state
+     */
+    syncFromThree() {
+        if (this.#isDisposed) {
+            throw new Error('Cannot sync from disposed light');
+        }
+
+        // Emit sync event
+        EventBus.publish('light:synced', {
+            light: this,
+            intensity: this.#threeLight.intensity,
+            color: this.#threeLight.color.getHex(),
+            position: this.#threeLight.position ? this.#threeLight.position.toArray() : null,
+            timestamp: Date.now(),
+        });
+
+        return {
+            type: this.#type,
+            intensity: this.#threeLight.intensity,
+            color: this.#threeLight.color.getHex(),
+            position: this.#threeLight.position ? this.#threeLight.position.toArray() : null,
+        };
+    }
+
+    /**
      * Get light type
      * @returns {string} Light type identifier
      */

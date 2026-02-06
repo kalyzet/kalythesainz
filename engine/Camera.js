@@ -49,6 +49,39 @@ export class Camera {
     }
 
     /**
+     * Synchronize framework state with underlying Three.js camera
+     * Call this after directly manipulating the Three.js camera
+     * @returns {object} Current camera state
+     */
+    syncFromThree() {
+        if (this.#isDisposed) {
+            throw new Error('Cannot sync from disposed camera');
+        }
+
+        // Emit sync event
+        EventBus.publish('camera:synced', {
+            camera: this,
+            position: this.#threeCamera.position.toArray(),
+            rotation: [
+                this.#threeCamera.rotation.x,
+                this.#threeCamera.rotation.y,
+                this.#threeCamera.rotation.z,
+            ],
+            timestamp: Date.now(),
+        });
+
+        return {
+            position: this.#threeCamera.position.toArray(),
+            rotation: [
+                this.#threeCamera.rotation.x,
+                this.#threeCamera.rotation.y,
+                this.#threeCamera.rotation.z,
+            ],
+            type: this.#type,
+        };
+    }
+
+    /**
      * Get camera type
      * @returns {string} Camera type ('perspective' or 'orthographic')
      */

@@ -22,12 +22,12 @@ export class Object3D {
      */
     constructor(geometry, material) {
         // Validate geometry
-        if (!geometry || !(geometry instanceof THREE.BufferGeometry)) {
+        if (!geometry || !(geometry instanceof THREE.BufferGeometry || geometry.isBufferGeometry)) {
             throw new Error('Geometry must be a valid Three.js BufferGeometry');
         }
 
         // Validate material
-        if (!material || !(material instanceof THREE.Material)) {
+        if (!material || !(material instanceof THREE.Material || material.isMaterial)) {
             throw new Error('Material must be a valid Three.js Material');
         }
 
@@ -318,6 +318,56 @@ export class Object3D {
      */
     get threeObject() {
         return this.#threeMesh;
+    }
+
+    /**
+     * Synchronize framework state with underlying Three.js object
+     * Call this after directly manipulating the Three.js mesh
+     * @returns {object} Object with synchronized properties
+     */
+    syncFromThree() {
+        if (!this.#threeMesh) {
+            throw new Error('Cannot sync from disposed object');
+        }
+
+        // Sync visibility
+        if (this.#visible !== this.#threeMesh.visible) {
+            this.#visible = this.#threeMesh.visible;
+            EventBus.publish('object:visibilityChanged', {
+                id: this.#id,
+                object: this,
+                oldVisible: !this.#visible,
+                newVisible: this.#visible,
+            });
+        }
+
+        // Return current state for verification
+        return {
+            position: this.#threeMesh.position.toArray(),
+            rotation: [
+                this.#threeMesh.rotation.x,
+                this.#threeMesh.rotation.y,
+                this.#threeMesh.rotation.z,
+            ],
+            scale: this.#threeMesh.scale.toArray(),
+            visible: this.#threeMesh.visible,
+        };
+    }
+
+    /**
+     * Enable automatic synchronization from Three.js object
+     * Useful when mixing framework and direct Three.js manipulation
+     * @param {boolean} enabled - Whether to enable auto-sync
+     */
+    setAutoSync(enabled) {
+        if (enabled) {
+            // Store reference for sync checking
+            this.#threeMesh.userData._kalythesainzAutoSync = true;
+            this.#threeMesh.userData._kalythesainzWrapper = this;
+        } else {
+            delete this.#threeMesh.userData._kalythesainzAutoSync;
+            delete this.#threeMesh.userData._kalythesainzWrapper;
+        }
     }
 
     /**

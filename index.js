@@ -9,6 +9,15 @@
 export { App } from './core/App.js';
 export { Config } from './core/Config.js';
 export { EventBus } from './core/EventBus.js';
+export { PluginManager } from './core/PluginManager.js';
+export {
+    CustomObjectPlugin,
+    CustomToolPlugin,
+    CustomModulePlugin,
+    createObjectPlugin,
+    createToolPlugin,
+    createModulePlugin,
+} from './core/PluginInterfaces.js';
 
 // Engine Layer exports
 export { Scene } from './engine/Scene.js';
@@ -29,6 +38,7 @@ export { TransformGizmo } from './tools/TransformGizmo.js';
 
 // Utils exports
 export { Serializer } from './utils/Serializer.js';
+export { ThreeJsIntegration } from './utils/ThreeJsIntegration.js';
 
 // Framework version
 export const VERSION = '1.0.0';

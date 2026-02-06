@@ -38,22 +38,22 @@
     },
     "jest": {
         "testEnvironment": "jsdom",
-        "extensionsToTreatAsEsm": [
-            ".js"
-        ],
-        "setupFilesAfterEnv": [
-            "<rootDir>/tests/setup.js"
-        ],
-        "globals": {
-            "ts-jest": {
-                "useESM": true
-            }
-        },
-        "moduleNameMapping": {
-            "^three$": "<rootDir>/node_modules/three/build/three.module.js"
-        },
         "testMatch": [
             "<rootDir>/tests/**/*.test.js"
+        ],
+        "transform": {},
+        "moduleNameMapper": {
+            "^(\\.{1,2}/.*)\\.js$": "$1",
+            "^three$": "<rootDir>/tests/__mocks__/three.js"
+        },
+        "testEnvironmentOptions": {
+            "customExportConditions": [
+                "node",
+                "node-addons"
+            ]
+        },
+        "setupFilesAfterEnv": [
+            "<rootDir>/tests/setup.js"
         ]
     },
     "dependencies": {

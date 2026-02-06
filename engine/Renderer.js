@@ -46,6 +46,34 @@ export class Renderer {
     }
 
     /**
+     * Synchronize framework state with underlying Three.js renderer
+     * Call this after directly manipulating the Three.js renderer
+     * @returns {object} Current renderer state
+     */
+    syncFromThree() {
+        if (this.#isDisposed) {
+            throw new Error('Cannot sync from disposed renderer');
+        }
+
+        const size = new THREE.Vector2();
+        this.#threeRenderer.getSize(size);
+
+        // Emit sync event
+        EventBus.publish('renderer:synced', {
+            renderer: this,
+            size: { width: size.x, height: size.y },
+            pixelRatio: this.#threeRenderer.getPixelRatio(),
+            timestamp: Date.now(),
+        });
+
+        return {
+            size: { width: size.x, height: size.y },
+            pixelRatio: this.#threeRenderer.getPixelRatio(),
+            shadowsEnabled: this.#threeRenderer.shadowMap.enabled,
+        };
+    }
+
+    /**
      * Get the canvas element
      * @returns {HTMLCanvasElement} Canvas element
      */
