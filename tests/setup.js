@@ -3,8 +3,27 @@
  * Configures Jest environment for ESM and Three.js testing
  */
 
-import { jest } from '@jest/globals';
+import {
+    jest,
+    expect,
+    describe,
+    test,
+    beforeEach,
+    afterEach,
+    beforeAll,
+    afterAll,
+} from '@jest/globals';
 import mockThree from './setup-three-mock.js';
+
+// Make Jest globals available
+global.jest = jest;
+global.expect = expect;
+global.describe = describe;
+global.test = test;
+global.beforeEach = beforeEach;
+global.afterEach = afterEach;
+global.beforeAll = beforeAll;
+global.afterAll = afterAll;
 
 // Make Three.js available globally for tests
 global.THREE = mockThree;

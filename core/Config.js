@@ -75,7 +75,8 @@ export class Config {
             }
         }
 
-        return value;
+        // Return a deep clone to prevent external modifications
+        return Config.#deepClone(value);
     }
 
     /**

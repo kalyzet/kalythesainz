@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - unpkg CDN Example</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+            #info {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                max-width: 400px;
+            }
+            code {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-family: 'Courier New', monospace;
+                display: block;
+                margin: 10px 0;
+                word-break: break-all;
+            }
+            .highlight {
+                color: #ffeb3b;
+            }
+            button {
+                background: #4caf50;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+            button:hover {
+                background: #45a049;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="info">
+            <h3>📦 unpkg CDN Example</h3>
+            <p>
+                This example demonstrates loading KALYTHESAINZ from
+                <span class="highlight">unpkg CDN</span>.
+            </p>
+            <p><strong>Import URL:</strong></p>
+            <code>https://unpkg.com/kalythesainz@1.0.0/dist/kalythesainz.min.js</code>
+            <p><strong>Alternative (latest version):</strong></p>
+            <code>https://unpkg.com/kalythesainz/dist/kalythesainz.min.js</code>
+            <button onclick="addRandomObject()">Add Random Object</button>
+            <p style="margin-top: 15px; font-size: 12px; opacity: 0.8">
+                Note: For this demo, we're using local files. In production, use the CDN URL above.
+            </p>
+        </div>
+
+        <script type="module">
+            // Production import (commented out for local testing):
+            // import { Scene, Box, Sphere, Plane, Light } from 'https://unpkg.com/kalythesainz@1.0.0/dist/kalythesainz.min.js';
+
+            // Local import for testing:
+            import { Scene, Box, Sphere, Plane, Light } from '../dist/kalythesainz.min.js';
+
+            // Make modules available globally for button onclick
+            window.KALYTHESAINZ = { Box, Sphere, Plane };
+
+            // Initialize scene
+            const scene = Scene.init('container');
+
+            // Set up lighting
+            Light.sun(1.5);
+            Light.ambient(0.5);
+            Light.point(5, 5, 5, 0.8, 0xffffff);
+
+            // Create initial objects
+            const box = Box.create(1, 1, 1);
+            box.position = [-1.5, 0, 0];
+            box.name = 'Initial Box';
+
+            const sphere = Sphere.create(0.7);
+            sphere.position = [1.5, 0, 0];
+            sphere.name = 'Initial Sphere';
+
+            // Function to add random objects
+            window.addRandomObject = function () {
+                const types = ['Box', 'Sphere', 'Plane'];
+                const type = types[Math.floor(Math.random() * types.length)];
+
+                let obj;
+                if (type === 'Box') {
+                    obj = window.KALYTHESAINZ.Box.create(
+                        Math.random() * 0.5 + 0.5,
+                        Math.random() * 0.5 + 0.5,
+                        Math.random() * 0.5 + 0.5,
+                    );
+                } else if (type === 'Sphere') {
+                    obj = window.KALYTHESAINZ.Sphere.create(Math.random() * 0.5 + 0.3);
+                } else {
+                    obj = window.KALYTHESAINZ.Plane.create(
+                        Math.random() * 0.5 + 0.5,
+                        Math.random() * 0.5 + 0.5,
+                    );
+                }
+
+                obj.position = [
+                    (Math.random() - 0.5) * 4,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                ];
+                obj.rotation = [
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                ];
+                obj.name = `Random ${type} ${Date.now()}`;
+
+                console.log('Added:', obj.name);
+            };
+
+            console.log('✓ Scene loaded from unpkg CDN');
+            console.log('✓ Click "Add Random Object" to add more objects');
+        </script>
+    </body>
+</html>

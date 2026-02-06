@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Simple CDN Example</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+            #info {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: rgba(0, 0, 0, 0.7);
+                color: white;
+                padding: 15px;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="info">
+            <h3>Simple CDN Example</h3>
+            <p>This example loads KALYTHESAINZ from CDN and creates a basic 3D scene.</p>
+        </div>
+
+        <!-- 
+        For production use, replace the import path with:
+        https://cdn.jsdelivr.net/npm/kalythesainz@1.0.0/dist/kalythesainz.min.js
+        or
+        https://unpkg.com/kalythesainz@1.0.0/dist/kalythesainz.min.js
+    -->
+        <script type="module">
+            // Import from local dist (in production, use CDN URL)
+            import { Scene, Box, Sphere, Light } from '../dist/kalythesainz.min.js';
+
+            // Initialize the scene
+            const scene = Scene.init('container');
+
+            // Add lighting
+            Light.sun();
+            Light.ambient(0.3);
+
+            // Create a box
+            const box = Box.create(1, 1, 1);
+            box.position = [-1.5, 0, 0];
+            box.name = 'Red Box';
+
+            // Create a sphere
+            const sphere = Sphere.create(0.7);
+            sphere.position = [1.5, 0, 0];
+            sphere.name = 'Blue Sphere';
+
+            console.log('Scene initialized successfully!');
+            console.log('Box:', box.name, 'at', box.position);
+            console.log('Sphere:', sphere.name, 'at', sphere.position);
+        </script>
+    </body>
+</html>

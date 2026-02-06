@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Complete Demo</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #1a1a1a;
+                color: #e0e0e0;
+                overflow: hidden;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 15px 20px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .header h1 {
+                font-size: 24px;
+                font-weight: 600;
+            }
+
+            .header p {
+                font-size: 12px;
+                opacity: 0.9;
+                margin-top: 5px;
+            }
+
+            .main-container {
+                display: flex;
+                height: calc(100vh - 80px);
+            }
+
+            .sidebar {
+                width: 280px;
+                background: #2a2a2a;
+                border-right: 1px solid #3a3a3a;
+                overflow-y: auto;
+                padding: 15px;
+            }
+
+            .viewport-container {
+                flex: 1;
+                position: relative;
+                background: #1a1a1a;
+            }
+
+            #canvas-container {
+                width: 100%;
+                height: 100%;
+            }
+
+            .panel {
+                background: #333;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .panel h3 {
+                color: #667eea;
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 10px;
+                margin: 5px 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+
+            .btn:active {
+                transform: translateY(0);
+            }
+
+            .btn-secondary {
+                background: #444;
+            }
+
+            .btn-secondary:hover {
+                background: #555;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .btn-danger {
+                background: #e74c3c;
+            }
+
+            .btn-danger:hover {
+                background: #c0392b;
+                box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+            }
+
+            .scene-tree-item {
+                padding: 8px;
+                margin: 4px 0;
+                background: #2a2a2a;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                transition: background 0.2s;
+            }
+
+            .scene-tree-item:hover {
+                background: #3a3a3a;
+            }
+
+            .scene-tree-item.selected {
+                background: #667eea;
+                color: white;
+            }
+
+            .inspector-property {
+                margin: 10px 0;
+            }
+
+            .inspector-property label {
+                display: block;
+                font-size: 11px;
+                color: #999;
+                margin-bottom: 4px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .inspector-property input {
+                width: 100%;
+                padding: 8px;
+                background: #2a2a2a;
+                border: 1px solid #444;
+                border-radius: 4px;
+                color: white;
+                font-size: 12px;
+            }
+
+            .status-bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 10px 20px;
+                font-size: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .status-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .status-indicator {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #4caf50;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+            }
+
+            .log-message {
+                padding: 8px;
+                margin: 4px 0;
+                background: #2a2a2a;
+                border-left: 3px solid #667eea;
+                border-radius: 4px;
+                font-size: 11px;
+                font-family: 'Courier New', monospace;
+            }
+
+            .log-message.success {
+                border-left-color: #4caf50;
+            }
+
+            .log-message.error {
+                border-left-color: #e74c3c;
+            }
+
+            .right-sidebar {
+                width: 300px;
+                background: #2a2a2a;
+                border-left: 1px solid #3a3a3a;
+                overflow-y: auto;
+                padding: 15px;
+            }
+
+            .code-example {
+                background: #1a1a1a;
+                border: 1px solid #3a3a3a;
+                border-radius: 4px;
+                padding: 12px;
+                margin: 10px 0;
+                font-family: 'Courier New', monospace;
+                font-size: 11px;
+                overflow-x: auto;
+            }
+
+            .code-example pre {
+                margin: 0;
+                color: #a8dadc;
+            }
+
+            .btn-group {
+                display: flex;
+                gap: 5px;
+            }
+
+            .btn-group .btn {
+                flex: 1;
+            }
+
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #1a1a1a;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #444;
+                border-radius: 4px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+        </style>
+    </head>
+    <body></body>
+</html>
+<div class="header">
+    <h1>🎨 KALYTHESAINZ Framework - Complete Demo</h1>
+    <p>
+        A comprehensive demonstration of all framework features including scene management, visual
+        tools, and serialization
+    </p>
+</div>
+
+<div class="main-container">
+    <!-- Left Sidebar: Controls -->
+    <div class="sidebar">
+        <div class="panel">
+            <h3>🎬 Scene Controls</h3>
+            <button class="btn" onclick="demo.initScene()">Initialize Scene</button>
+            <button class="btn btn-secondary" onclick="demo.clearScene()">Clear Scene</button>
+            <button class="btn btn-danger" onclick="demo.resetDemo()">Reset Demo</button>
+        </div>
+
+        <div class="panel">
+            <h3>📦 Add Objects</h3>
+            <button class="btn" onclick="demo.addBox()">Add Box</button>
+            <button class="btn" onclick="demo.addSphere()">Add Sphere</button>
+            <button class="btn" onclick="demo.addPlane()">Add Plane</button>
+            <button class="btn btn-secondary" onclick="demo.addRandomObjects()">
+                Add 5 Random Objects
+            </button>
+        </div>
+
+        <div class="panel">
+            <h3>💡 Lighting</h3>
+            <button class="btn" onclick="demo.addSunLight()">Add Sun Light</button>
+            <button class="btn" onclick="demo.addAmbientLight()">Add Ambient Light</button>
+            <button class="btn" onclick="demo.addPointLight()">Add Point Light</button>
+            <button class="btn" onclick="demo.addSpotLight()">Add Spot Light</button>
+        </div>
+
+        <div class="panel">
+            <h3>🎥 Camera Presets</h3>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="demo.setCameraTop()">Top</button>
+                <button class="btn btn-secondary" onclick="demo.setCameraFront()">Front</button>
+                <button class="btn btn-secondary" onclick="demo.setCameraIso()">Iso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+                <div class="panel">
+                    <h3>💾 Serialization</h3>
+                    <button class="btn" onclick="demo.saveScene()">Save Scene</button>
+                    <button class="btn" onclick="demo.loadScene()">Load Scene</button>
+                    <button class="btn btn-secondary" onclick="demo.exportJSON()">
+                        Export JSON
+                    </button>
+                </div>
+
+                <div class="panel">
+                    <h3>🔧 Direct Three.js</h3>
+                    <button class="btn" onclick="demo.directThreeJsExample()">
+                        Manipulate with Three.js
+                    </button>
+                    <button class="btn btn-secondary" onclick="demo.showThreeJsAccess()">
+                        Show Three.js Objects
+                    </button>
+                </div>
+
+                <div class="panel">
+                    <h3>📊 Activity Log</h3>
+                    <div id="activity-log" style="max-height: 200px; overflow-y: auto"></div>
+                </div>
+            </div>
+
+            <!-- Center: 3D Viewport -->
+            <div class="viewport-container">
+                <div id="canvas-container"></div>
+                <div class="status-bar">
+                    <div class="status-item">
+                        <div class="status-indicator"></div>
+                        <span>Framework Active</span>
+                    </div>
+                    <div class="status-item">
+                        <span id="object-count">Objects: 0</span>
+                    </div>
+                    <div class="status-item">
+                        <span id="fps-counter">FPS: 60</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Scene Tree & Inspector -->
+            <div class="right-sidebar">
+                <div class="panel">
+                    <h3>🌳 Scene Tree</h3>
+                    <div id="scene-tree"></div>
+                </div>
+
+                <div class="panel">
+                    <h3>🔍 Inspector</h3>
+                    <div id="inspector"></div>
+                </div>
+            </div>
+        </div>
+
+        <script type="module">
+            // Import Three.js from CDN
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+            // Make THREE available globally
+            window.THREE = THREE;
+
+            // Import KALYTHESAINZ framework from local files
+            // In production, this would be: import { ... } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.js'
+            import {
+                Scene,
+                Box,
+                Sphere,
+                Plane,
+                Light,
+                Camera,
+                SceneTree,
+                Inspector,
+                TransformGizmo,
+                Serializer,
+                EventBus,
+                quickStart,
+            } from '../index.js';
+
+            // Demo application class
+            class KalythesainzDemo {
+                constructor() {
+                    this.scene = null;
+                    this.sceneTree = null;
+                    this.inspector = null;
+                    this.gizmo = null;
+                    this.savedSceneData = null;
+                    this.selectedObject = null;
+                    this.frameCount = 0;
+                    this.lastTime = performance.now();
+
+                    this.setupEventListeners();
+                }
+
+                log(message, type = 'info') {
+                    const logContainer = document.getElementById('activity-log');
+                    const logEntry = document.createElement('div');
+                    logEntry.className = `log-message ${type}`;
+                    logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                    logContainer.insertBefore(logEntry, logContainer.firstChild);
+
+                    // Keep only last 20 messages
+                    while (logContainer.children.length > 20) {
+                        logContainer.removeChild(logContainer.lastChild);
+                    }
+
+                    console.log(message);
+                }
+
+                setupEventListeners() {
+                    // Listen to framework events
+                    EventBus.subscribe('object:added', (data) => {
+                        this.log(`Object added: ${data.object.name || data.object.id}`, 'success');
+                        this.updateObjectCount();
+                        this.refreshVisualTools();
+                    });
+
+                    EventBus.subscribe('object:removed', (data) => {
+                        this.log(`Object removed: ${data.id}`, 'info');
+                        this.updateObjectCount();
+                        this.refreshVisualTools();
+                    });
+
+                    EventBus.subscribe('object:modified', (data) => {
+                        this.log(`Object modified: ${data.object.id}`, 'info');
+                        this.refreshVisualTools();
+                    });
+
+                    EventBus.subscribe('scene:cleared', () => {
+                        this.log('Scene cleared', 'info');
+                        this.updateObjectCount();
+                        this.refreshVisualTools();
+                    });
+                }
+
+                initScene() {
+                    try {
+                        this.log('Initializing scene...', 'info');
+
+                        // Initialize scene using quickStart helper
+                        this.scene = quickStart('canvas-container', {
+                            renderer: { antialias: true },
+                            camera: { fov: 75, position: [5, 5, 10] },
+                        });
+
+                        // Add ambient light for better visibility
+                        Light.ambient(0.5);
+
+                        // Initialize visual tools
+                        this.sceneTree = new SceneTree('scene-tree');
+                        this.inspector = new Inspector('inspector');
+
+                        // Setup scene tree selection
+                        this.sceneTree.onObjectSelect((objectId) => {
+                            const obj = this.scene.find(objectId);
+                            if (obj) {
+                                this.selectedObject = obj;
+                                this.inspector.show(obj);
+                                this.log(`Selected: ${obj.name || obj.id}`, 'info');
+                            }
+                        });
+
+                        // Setup inspector property changes
+                        this.inspector.onPropertyChange((property, value) => {
+                            this.log(`Property changed: ${property} = ${value}`, 'info');
+                        });
+
+                        // Start FPS counter
+                        this.startFPSCounter();
+
+                        this.log('Scene initialized successfully!', 'success');
+                        this.updateObjectCount();
+                    } catch (error) {
+                        this.log(`Error initializing scene: ${error.message}`, 'error');
+                        console.error(error);
+                    }
+                }
+
+                clearScene() {
+                    if (!this.scene) {
+                        this.log('No scene to clear', 'error');
+                        return;
+                    }
+
+                    try {
+                        this.scene.clear();
+                        this.selectedObject = null;
+                        this.inspector.hide();
+                        this.log('Scene cleared successfully', 'success');
+                    } catch (error) {
+                        this.log(`Error clearing scene: ${error.message}`, 'error');
+                    }
+                }
+
+                resetDemo() {
+                    if (this.scene) {
+                        this.scene.clear();
+                    }
+                    this.scene = null;
+                    this.sceneTree = null;
+                    this.inspector = null;
+                    this.selectedObject = null;
+                    this.savedSceneData = null;
+
+                    document.getElementById('canvas-container').innerHTML = '';
+                    document.getElementById('scene-tree').innerHTML = '';
+                    document.getElementById('inspector').innerHTML = '';
+                    document.getElementById('activity-log').innerHTML = '';
+
+                    this.log('Demo reset complete', 'success');
+                }
+
+                addBox() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+
+                    const box = Box.create(
+                        Math.random() * 2 + 0.5,
+                        Math.random() * 2 + 0.5,
+                        Math.random() * 2 + 0.5
+                    );
+                    box.position = {
+                        x: (Math.random() - 0.5) * 8,
+                        y: Math.random() * 3,
+                        z: (Math.random() - 0.5) * 8,
+                    };
+                    box.name = `Box_${Date.now()}`;
+                    this.scene.add(box);
+                }
+
+                addSphere() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+
+                    const sphere = Sphere.create(Math.random() * 1.5 + 0.5, 32);
+                    sphere.position = {
+                        x: (Math.random() - 0.5) * 8,
+                        y: Math.random() * 3,
+                        z: (Math.random() - 0.5) * 8,
+                    };
+                    sphere.name = `Sphere_${Date.now()}`;
+                    this.scene.add(sphere);
+                }
+
+                addPlane() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+
+                    const plane = Plane.create(Math.random() * 3 + 1, Math.random() * 3 + 1);
+                    plane.position = {
+                        x: (Math.random() - 0.5) * 8,
+                        y: Math.random() * 3,
+                        z: (Math.random() - 0.5) * 8,
+                    };
+                    plane.rotation = { x: Math.PI / 2, y: 0, z: 0 };
+                    plane.name = `Plane_${Date.now()}`;
+                    this.scene.add(plane);
+                }
+
+                addRandomObjects() {
+                    const types = ['box', 'sphere', 'plane'];
+                    for (let i = 0; i < 5; i++) {
+                        const type = types[Math.floor(Math.random() * types.length)];
+                        switch (type) {
+                            case 'box':
+                                this.addBox();
+                                break;
+                            case 'sphere':
+                                this.addSphere();
+                                break;
+                            case 'plane':
+                                this.addPlane();
+                                break;
+                        }
+                    }
+                    this.log('Added 5 random objects', 'success');
+                }
+
+                addSunLight() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+                    Light.sun(1.0);
+                    this.log('Sun light added', 'success');
+                }
+
+                addAmbientLight() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+                    Light.ambient(0.6);
+                    this.log('Ambient light added', 'success');
+                }
+
+                addPointLight() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+                    Light.point(
+                        (Math.random() - 0.5) * 10,
+                        Math.random() * 5 + 2,
+                        (Math.random() - 0.5) * 10,
+                        1.0,
+                        0xffffff
+                    );
+                    this.log('Point light added', 'success');
+                }
+
+                addSpotLight() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+                    Light.spot(5, 5, 5, { x: 0, y: 0, z: 0 }, 1.0);
+                    this.log('Spot light added', 'success');
+                }
+
+                setCameraTop() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+                    const camera = Camera.topView();
+                    this.scene.camera = camera;
+                    this.log('Camera set to top view', 'success');
+                }
+
+                setCameraFront() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+                    const camera = Camera.frontView();
+                    this.scene.camera = camera;
+                    this.log('Camera set to front view', 'success');
+                }
+
+                setCameraIso() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+                    const camera = Camera.isometric();
+                    this.scene.camera = camera;
+                    this.log('Camera set to isometric view', 'success');
+                }
+
+                saveScene() {
+                    if (!this.scene) {
+                        this.log('No scene to save', 'error');
+                        return;
+                    }
+
+                    try {
+                        this.savedSceneData = Serializer.serialize(this.scene);
+                        this.log(
+                            `Scene saved (${this.savedSceneData.objects.length} objects)`,
+                            'success'
+                        );
+                    } catch (error) {
+                        this.log(`Error saving scene: ${error.message}`, 'error');
+                    }
+                }
+
+                loadScene() {
+                    if (!this.savedSceneData) {
+                        this.log('No saved scene data', 'error');
+                        return;
+                    }
+
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+
+                    try {
+                        this.scene.clear();
+                        Serializer.deserialize(this.savedSceneData, this.scene);
+                        this.log(
+                            `Scene loaded (${this.savedSceneData.objects.length} objects)`,
+                            'success'
+                        );
+                        this.refreshVisualTools();
+                    } catch (error) {
+                        this.log(`Error loading scene: ${error.message}`, 'error');
+                    }
+                }
+
+                exportJSON() {
+                    if (!this.scene) {
+                        this.log('No scene to export', 'error');
+                        return;
+                    }
+
+                    try {
+                        const data = Serializer.serialize(this.scene);
+                        const json = JSON.stringify(data, null, 2);
+                        const blob = new Blob([json], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `scene_${Date.now()}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        this.log('Scene exported as JSON', 'success');
+                    } catch (error) {
+                        this.log(`Error exporting scene: ${error.message}`, 'error');
+                    }
+                }
+
+                directThreeJsExample() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+
+                    try {
+                        // Create a box using framework API
+                        const box = Box.create(1, 1, 1);
+                        box.position = { x: 0, y: 2, z: 0 };
+                        box.name = 'DirectManipulationBox';
+                        this.scene.add(box);
+
+                        // Access underlying Three.js mesh and manipulate directly
+                        const threeMesh = box.threeMesh;
+                        threeMesh.material.color.setHex(0xff00ff);
+                        threeMesh.material.wireframe = true;
+
+                        // Rotate using Three.js directly
+                        threeMesh.rotation.x = Math.PI / 4;
+                        threeMesh.rotation.y = Math.PI / 4;
+
+                        this.log(
+                            'Created box and manipulated with Three.js directly (wireframe + rotation)',
+                            'success'
+                        );
+                        this.refreshVisualTools();
+                    } catch (error) {
+                        this.log(`Error with Three.js manipulation: ${error.message}`, 'error');
+                    }
+                }
+
+                showThreeJsAccess() {
+                    if (!this.scene) {
+                        this.log('Initialize scene first', 'error');
+                        return;
+                    }
+
+                    try {
+                        const threeScene = this.scene.threeScene;
+                        const threeRenderer = this.scene.renderer.threeRenderer;
+                        const threeCamera = this.scene.camera.threeCamera;
+
+                        this.log('Three.js Access:', 'info');
+                        this.log(`  Scene: ${threeScene.constructor.name}`, 'info');
+                        this.log(`  Renderer: ${threeRenderer.constructor.name}`, 'info');
+                        this.log(`  Camera: ${threeCamera.constructor.name}`, 'info');
+                        this.log(`  Scene children: ${threeScene.children.length}`, 'info');
+                    } catch (error) {
+                        this.log(`Error accessing Three.js objects: ${error.message}`, 'error');
+                    }
+                }
+
+                refreshVisualTools() {
+                    if (this.sceneTree) {
+                        this.sceneTree.refresh();
+                    }
+                    if (this.inspector && this.selectedObject) {
+                        this.inspector.refresh();
+                    }
+                }
+
+                updateObjectCount() {
+                    if (this.scene) {
+                        const count = this.scene.objects.length;
+                        document.getElementById('object-count').textContent = `Objects: ${count}`;
+                    }
+                }
+
+                startFPSCounter() {
+                    const updateFPS = () => {
+                        this.frameCount++;
+                        const currentTime = performance.now();
+                        const elapsed = currentTime - this.lastTime;
+
+                        if (elapsed >= 1000) {
+                            const fps = Math.round((this.frameCount * 1000) / elapsed);
+                            document.getElementById('fps-counter').textContent = `FPS: ${fps}`;
+                            this.frameCount = 0;
+                            this.lastTime = currentTime;
+                        }
+
+                        requestAnimationFrame(updateFPS);
+                    };
+                    updateFPS();
+                }
+            }
+
+            // Create global demo instance
+            window.demo = new KalythesainzDemo();
+
+            // Auto-initialize on load
+            window.addEventListener('load', () => {
+                demo.log('KALYTHESAINZ Framework loaded', 'success');
+                demo.log('Click "Initialize Scene" to start', 'info');
+                demo.log(
+                    'This demo uses ESM imports from CDN (Three.js) and local framework files',
+                    'info'
+                );
+            });
+        </script>
+    </body>
+</html>

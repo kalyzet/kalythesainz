@@ -60,7 +60,7 @@ export class Box extends Object3D {
         }
 
         // Validate material
-        if (!(material instanceof THREE.Material)) {
+        if (!(material instanceof THREE.Material) && !material.isMaterial) {
             throw new Error('Material must be a valid Three.js Material');
         }
 

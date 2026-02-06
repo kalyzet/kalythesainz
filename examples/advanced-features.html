@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Advanced Features</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: 'Courier New', monospace;
+                background: #0a0a0a;
+                color: #00ff00;
+            }
+            .split-view {
+                display: flex;
+                height: 100vh;
+            }
+            .viewport {
+                flex: 1;
+            }
+            .console {
+                width: 400px;
+                background: #000;
+                padding: 20px;
+                overflow-y: auto;
+                border-left: 2px solid #00ff00;
+            }
+            .console h2 {
+                margin: 0 0 15px 0;
+                color: #00ff00;
+            }
+            .log-entry {
+                margin: 5px 0;
+                padding: 5px;
+                background: #0a0a0a;
+                border-left: 3px solid #00ff00;
+            }
+            .log-entry.event {
+                border-left-color: #ffff00;
+            }
+            .log-entry.error {
+                border-left-color: #ff0000;
+            }
+            button {
+                background: #00ff00;
+                color: #000;
+                border: none;
+                padding: 10px 15px;
+                margin: 5px;
+                cursor: pointer;
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+            }
+            button:hover {
+                background: #00cc00;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="split-view">
+            <div class="viewport" id="viewport"></div>
+            <div class="console">
+                <h2>&gt; KALYTHESAINZ Advanced Features</h2>
+                <div>
+                    <button onclick="demo.testEventSystem()">Test Event System</button>
+                    <button onclick="demo.testSerialization()">Test Serialization</button>
+                    <button onclick="demo.testThreeJsIntegration()">
+                        Test Three.js Integration
+                    </button>
+                    <button onclick="demo.stressTest()">Stress Test (100 objects)</button>
+                    <button onclick="demo.clearAll()">Clear All</button>
+                </div>
+                <div id="log"></div>
+            </div>
+        </div>
+    </body>
+</html>
+
+        <script type="module">
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+            window.THREE = THREE;
+
+            import {
+                Scene,
+                Box,
+                Sphere,
+                Plane,
+                Light,
+                EventBus,
+                Serializer,
+                quickStart,
+            } from '../index.js';
+
+            class AdvancedDemo {
+                constructor() {
+                    this.scene = null;
+                    this.eventLog = [];
+                    this.setupEventListeners();
+                    this.init();
+                }
+
+                init() {
+                    this.log('Initializing advanced demo...');
+                    this.scene = quickStart('viewport');
+                    Light.ambient(0.5);
+                    this.log('Scene ready. Try the demo buttons!');
+                }
+
+                log(message, type = 'info') {
+                    const timestamp = new Date().toLocaleTimeString();
+                    const entry = `[${timestamp}] ${message}`;
+                    this.eventLog.push(entry);
+
+                    const logDiv = document.getElementById('log');
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = `log-entry ${type}`;
+                    entryDiv.textContent = entry;
+                    logDiv.insertBefore(entryDiv, logDiv.firstChild);
+
+                    // Keep only last 50 entries
+                    while (logDiv.children.length > 50) {
+                        logDiv.removeChild(logDiv.lastChild);
+                    }
+
+                    console.log(entry);
+                }
+
+                setupEventListeners() {
+                    EventBus.subscribe('object:added', (data) => {
+                        this.log(`EVENT: Object added - ${data.object.id}`, 'event');
+                    });
+
+                    EventBus.subscribe('object:removed', (data) => {
+                        this.log(`EVENT: Object removed - ${data.id}`, 'event');
+                    });
+
+                    EventBus.subscribe('object:modified', (data) => {
+                        this.log(`EVENT: Object modified - ${data.object.id}`, 'event');
+                    });
+
+                    EventBus.subscribe('scene:cleared', () => {
+                        this.log('EVENT: Scene cleared', 'event');
+                    });
+                }
+
+                testEventSystem() {
+                    this.log('=== Testing Event System ===');
+
+                    // Create objects and watch events
+                    const box = Box.create(1, 1, 1);
+                    box.name = 'EventTestBox';
+                    this.scene.add(box);
+
+                    // Modify object
+                    setTimeout(() => {
+                        box.position = { x: 2, y: 0, z: 0 };
+                        this.log('Modified box position');
+                    }, 500);
+
+                    // Remove object
+                    setTimeout(() => {
+                        this.scene.remove(box.id);
+                        this.log('Removed box');
+                    }, 1000);
+
+                    this.log('Event test sequence started (watch for events)');
+                }
+
+                testSerialization() {
+                    this.log('=== Testing Serialization ===');
+
+                    // Create a complex scene
+                    const box = Box.create(1, 1, 1);
+                    box.position = { x: -2, y: 0, z: 0 };
+                    box.name = 'SerializedBox';
+                    this.scene.add(box);
+
+                    const sphere = Sphere.create(0.8, 32);
+                    sphere.position = { x: 2, y: 1, z: 0 };
+                    sphere.name = 'SerializedSphere';
+                    this.scene.add(sphere);
+
+                    // Serialize
+                    const data = Serializer.serialize(this.scene);
+                    this.log(`Serialized scene: ${data.objects.length} objects`);
+                    this.log(`JSON size: ${JSON.stringify(data).length} bytes`);
+
+                    // Clear and deserialize
+                    setTimeout(() => {
+                        this.log('Clearing scene...');
+                        this.scene.clear();
+
+                        setTimeout(() => {
+                            this.log('Deserializing scene...');
+                            Serializer.deserialize(data, this.scene);
+                            this.log('Scene restored from serialized data!');
+                        }, 500);
+                    }, 1000);
+                }
+
+                testThreeJsIntegration() {
+                    this.log('=== Testing Three.js Integration ===');
+
+                    // Create object with framework
+                    const box = Box.create(1, 1, 1);
+                    box.position = { x: 0, y: 0, z: 0 };
+                    box.name = 'ThreeJsTestBox';
+                    this.scene.add(box);
+
+                    this.log('Created box with framework API');
+
+                    // Access Three.js objects
+                    const threeMesh = box.threeMesh;
+                    const threeScene = this.scene.threeScene;
+                    const threeRenderer = this.scene.renderer.threeRenderer;
+
+                    this.log(`Three.js mesh: ${threeMesh.constructor.name}`);
+                    this.log(`Three.js scene: ${threeScene.constructor.name}`);
+                    this.log(`Three.js renderer: ${threeRenderer.constructor.name}`);
+
+                    // Manipulate with Three.js directly
+                    threeMesh.material.color.setHex(0xff00ff);
+                    threeMesh.material.wireframe = true;
+                    this.log('Applied wireframe material via Three.js');
+
+                    // Animate with Three.js
+                    let angle = 0;
+                    const animate = () => {
+                        angle += 0.05;
+                        threeMesh.rotation.y = angle;
+                        if (angle < Math.PI * 2) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            this.log('Animation complete');
+                        }
+                    };
+                    animate();
+                    this.log('Started Three.js animation');
+                }
+
+                stressTest() {
+                    this.log('=== Stress Test: Creating 100 objects ===');
+                    const startTime = performance.now();
+
+                    for (let i = 0; i < 100; i++) {
+                        const type = i % 3;
+                        let obj;
+
+                        if (type === 0) {
+                            obj = Box.create(0.5, 0.5, 0.5);
+                        } else if (type === 1) {
+                            obj = Sphere.create(0.3, 16);
+                        } else {
+                            obj = Plane.create(0.5, 0.5);
+                        }
+
+                        obj.position = {
+                            x: (Math.random() - 0.5) * 20,
+                            y: Math.random() * 10,
+                            z: (Math.random() - 0.5) * 20,
+                        };
+                        obj.name = `StressTest_${i}`;
+                        this.scene.add(obj);
+                    }
+
+                    const endTime = performance.now();
+                    const duration = (endTime - startTime).toFixed(2);
+                    this.log(`Created 100 objects in ${duration}ms`);
+                    this.log(`Total objects in scene: ${this.scene.objects.length}`);
+                }
+
+                clearAll() {
+                    this.log('Clearing scene...');
+                    this.scene.clear();
+                    this.log('Scene cleared');
+                }
+            }
+
+            window.demo = new AdvancedDemo();
+        </script>
+    </body>
+</html>

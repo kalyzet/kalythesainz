@@ -259,6 +259,7 @@ export class EventBus {
             EventBus.#listeners.delete(event);
         } else {
             EventBus.#listeners.clear();
+            EventBus.#eventHistory = []; // Clear history when clearing all events
         }
     }
 

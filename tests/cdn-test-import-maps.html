@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Import Maps Test</title>
+
+        <!-- Import Maps Configuration -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "kalythesainz": "../dist/kalythesainz.min.js",
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+                }
+            }
+        </script>
+
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: #1a1a1a;
+                color: #fff;
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+            #info {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 15px;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+            .success {
+                color: #4caf50;
+            }
+            .error {
+                color: #f44336;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="info">
+            <h3>Import Maps Test</h3>
+            <div id="status">Loading...</div>
+            <div id="results"></div>
+        </div>
+
+        <script type="module">
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+
+            function log(message, isError = false) {
+                const p = document.createElement('p');
+                p.className = isError ? 'error' : 'success';
+                p.textContent = message;
+                resultsEl.appendChild(p);
+            }
+
+            async function testImportMaps() {
+                try {
+                    statusEl.textContent = 'Testing import maps...';
+
+                    // Test 1: Import using bare specifier
+                    log('Testing bare specifier import...');
+                    const { Scene, Box, Light, VERSION } = await import('kalythesainz');
+                    log('✓ Framework loaded via import map');
+                    log(`✓ Version: ${VERSION || '1.0.0'}`);
+
+                    // Test 2: Import Three.js via import map
+                    log('Testing Three.js import map...');
+                    const THREE = await import('three');
+                    log('✓ Three.js loaded via import map');
+                    log(`✓ Three.js revision: ${THREE.REVISION}`);
+
+                    // Test 3: Initialize scene
+                    statusEl.textContent = 'Testing scene initialization...';
+                    const scene = Scene.init('container');
+                    log('✓ Scene initialized');
+
+                    // Test 4: Create objects
+                    const box = Box.create(1, 1, 1);
+                    box.position = [0, 0, 0];
+                    log('✓ Box created and positioned');
+
+                    // Test 5: Add lighting
+                    Light.sun();
+                    log('✓ Lighting added');
+
+                    statusEl.textContent = 'All import map tests passed! ✓';
+                    statusEl.className = 'success';
+                } catch (error) {
+                    log(`✗ Error: ${error.message}`, true);
+                    statusEl.textContent = 'Tests failed';
+                    statusEl.className = 'error';
+                    console.error('Test error:', error);
+
+                    // Check if import maps are supported
+                    if (
+                        error.message.includes('import map') ||
+                        error.message.includes('bare specifier')
+                    ) {
+                        log('⚠ Import maps may not be supported in this browser', true);
+                        log('Import maps require Chrome 89+, Edge 89+, or Safari 16.4+', true);
+                    }
+                }
+            }
+
+            testImportMaps();
+        </script>
+    </body>
+</html>

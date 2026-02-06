@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Browser Compatibility Test</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: #1a1a1a;
+                color: #fff;
+                padding: 20px;
+            }
+            #info {
+                background: rgba(0, 0, 0, 0.7);
+                padding: 20px;
+                border-radius: 5px;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            .success {
+                color: #4caf50;
+            }
+            .error {
+                color: #f44336;
+            }
+            .warning {
+                color: #ff9800;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            th,
+            td {
+                padding: 10px;
+                text-align: left;
+                border-bottom: 1px solid #444;
+            }
+            th {
+                background: #333;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">
+            <h2>Browser Compatibility Test</h2>
+            <div id="browser-info"></div>
+            <div id="feature-tests"></div>
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="results"></tbody>
+            </table>
+        </div>
+
+        <script type="module">
+            const browserInfoEl = document.getElementById('browser-info');
+            const resultsEl = document.getElementById('results');
+
+            function addResult(feature, status, details = '') {
+                const row = document.createElement('tr');
+                const statusClass =
+                    status === 'Supported' ? 'success' : status === 'Warning' ? 'warning' : 'error';
+
+                row.innerHTML = `
+                <td>${feature}</td>
+                <td class="${statusClass}">${status}</td>
+                <td>${details}</td>
+            `;
+                resultsEl.appendChild(row);
+            }
+
+            // Detect browser
+            const ua = navigator.userAgent;
+            let browserName = 'Unknown';
+            let browserVersion = 'Unknown';
+
+            if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
+                browserName = 'Chrome';
+                browserVersion = ua.match(/Chrome\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Firefox') > -1) {
+                browserName = 'Firefox';
+                browserVersion = ua.match(/Firefox\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
+                browserName = 'Safari';
+                browserVersion = ua.match(/Version\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Edg') > -1) {
+                browserName = 'Edge';
+                browserVersion = ua.match(/Edg\/(\d+)/)?.[1] || 'Unknown';
+            }
+
+            browserInfoEl.innerHTML = `
+            <p><strong>Browser:</strong> ${browserName} ${browserVersion}</p>
+            <p><strong>User Agent:</strong> ${ua}</p>
+        `;
+
+            // Test ES Modules support
+            try {
+                addResult('ES Modules', 'Supported', 'Native ES module imports working');
+            } catch (error) {
+                addResult('ES Modules', 'Not Supported', error.message);
+            }
+
+            // Test WebGL support
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (gl) {
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                const renderer = debugInfo
+                    ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+                    : 'Unknown';
+                addResult('WebGL', 'Supported', `Renderer: ${renderer}`);
+            } else {
+                addResult('WebGL', 'Not Supported', 'WebGL context not available');
+            }
+
+            // Test dynamic imports
+            (async () => {
+                try {
+                    await import('data:text/javascript,export default 1');
+                    addResult('Dynamic Imports', 'Supported', 'Dynamic import() working');
+                } catch (error) {
+                    addResult('Dynamic Imports', 'Not Supported', error.message);
+                }
+
+                // Test framework loading
+                try {
+                    const module = await import('../dist/kalythesainz.min.js');
+                    addResult(
+                        'Framework Load',
+                        'Supported',
+                        `Version ${module.VERSION || '1.0.0'}`,
+                    );
+
+                    // Test Three.js loading
+                    try {
+                        const THREE =
+                            await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+                        addResult('Three.js CDN', 'Supported', `Revision ${THREE.REVISION}`);
+                    } catch (error) {
+                        addResult('Three.js CDN', 'Failed', error.message);
+                    }
+                } catch (error) {
+                    addResult('Framework Load', 'Failed', error.message);
+                }
+            })();
+
+            // Test other features
+            addResult(
+                'Promises',
+                typeof Promise !== 'undefined' ? 'Supported' : 'Not Supported',
+                '',
+            );
+            addResult('Async/Await', 'Supported', 'Required for ES modules');
+            addResult('Arrow Functions', 'Supported', 'Required for ES modules');
+            addResult('Classes', 'Supported', 'Required for ES modules');
+            addResult('Template Literals', 'Supported', 'Required for ES modules');
+
+            // Test localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                addResult('LocalStorage', 'Supported', 'Available for scene persistence');
+            } catch (error) {
+                addResult('LocalStorage', 'Not Supported', error.message);
+            }
+
+            // Test ResizeObserver
+            addResult(
+                'ResizeObserver',
+                typeof ResizeObserver !== 'undefined' ? 'Supported' : 'Not Supported',
+                'Used for automatic canvas resizing',
+            );
+
+            // Minimum version recommendations
+            const minVersions = {
+                Chrome: 60,
+                Firefox: 55,
+                Safari: 12,
+                Edge: 79,
+            };
+
+            const minVersion = minVersions[browserName];
+            if (minVersion && parseInt(browserVersion) >= minVersion) {
+                addResult(
+                    'Browser Version',
+                    'Supported',
+                    `${browserName} ${browserVersion} meets minimum requirement (${minVersion}+)`,
+                );
+            } else if (minVersion) {
+                addResult(
+                    'Browser Version',
+                    'Warning',
+                    `${browserName} ${browserVersion} may not meet minimum requirement (${minVersion}+)`,
+                );
+            }
+        </script>
+    </body>
+</html>

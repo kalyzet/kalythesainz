@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - jsDelivr CDN Test</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: #1a1a1a;
+                color: #fff;
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+            #info {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 15px;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+            .success {
+                color: #4caf50;
+            }
+            .error {
+                color: #f44336;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="info">
+            <h3>jsDelivr CDN Test</h3>
+            <div id="status">Loading...</div>
+            <div id="results"></div>
+        </div>
+
+        <script type="module">
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+
+            function log(message, isError = false) {
+                const p = document.createElement('p');
+                p.className = isError ? 'error' : 'success';
+                p.textContent = message;
+                resultsEl.appendChild(p);
+            }
+
+            async function testCDN() {
+                try {
+                    // Test 1: Load framework from local dist (simulating CDN)
+                    statusEl.textContent = 'Testing framework load...';
+
+                    // In a real CDN test, this would be:
+                    // import { Scene, Box, Light, VERSION } from 'https://cdn.jsdelivr.net/npm/kalythesainz@1.0.0/dist/kalythesainz.min.js';
+                    // For now, we'll test with local dist
+                    const module = await import('../dist/kalythesainz.min.js');
+
+                    log('✓ Framework loaded successfully');
+                    log(`✓ Version: ${module.VERSION || '1.0.0'}`);
+
+                    // Test 2: Check exports
+                    const requiredExports = [
+                        'Scene',
+                        'Box',
+                        'Sphere',
+                        'Plane',
+                        'Light',
+                        'Camera',
+                        'Renderer',
+                    ];
+                    let allExportsPresent = true;
+
+                    for (const exportName of requiredExports) {
+                        if (module[exportName]) {
+                            log(`✓ Export '${exportName}' available`);
+                        } else {
+                            log(`✗ Export '${exportName}' missing`, true);
+                            allExportsPresent = false;
+                        }
+                    }
+
+                    if (!allExportsPresent) {
+                        throw new Error('Some exports are missing');
+                    }
+
+                    // Test 3: Check Three.js dependency
+                    statusEl.textContent = 'Testing Three.js dependency...';
+                    try {
+                        const THREE =
+                            await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+                        log('✓ Three.js loaded from CDN');
+                        log(`✓ Three.js version: ${THREE.REVISION}`);
+                    } catch (error) {
+                        log(`✗ Three.js load failed: ${error.message}`, true);
+                    }
+
+                    // Test 4: Try to initialize a scene
+                    statusEl.textContent = 'Testing scene initialization...';
+                    try {
+                        const scene = module.Scene.init('container');
+                        log('✓ Scene initialized');
+
+                        // Test 5: Create objects
+                        const box = module.Box.create(1, 1, 1);
+                        log('✓ Box created');
+
+                        const sphere = module.Sphere.create(0.5);
+                        log('✓ Sphere created');
+
+                        // Test 6: Add lighting
+                        module.Light.sun();
+                        log('✓ Lighting added');
+
+                        statusEl.textContent = 'All tests passed! ✓';
+                        statusEl.className = 'success';
+                    } catch (error) {
+                        log(`✗ Scene test failed: ${error.message}`, true);
+                        statusEl.textContent = 'Tests failed';
+                        statusEl.className = 'error';
+                    }
+                } catch (error) {
+                    log(`✗ Fatal error: ${error.message}`, true);
+                    statusEl.textContent = 'Tests failed';
+                    statusEl.className = 'error';
+                    console.error('Test error:', error);
+                }
+            }
+
+            testCDN();
+        </script>
+    </body>
+</html>

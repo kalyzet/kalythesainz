@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - jsDelivr CDN Example</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+            #info {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                max-width: 400px;
+            }
+            code {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-family: 'Courier New', monospace;
+            }
+            .highlight {
+                color: #4fc3f7;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="info">
+            <h3>🚀 jsDelivr CDN Example</h3>
+            <p>
+                This example demonstrates loading KALYTHESAINZ from
+                <span class="highlight">jsDelivr CDN</span>.
+            </p>
+            <p><strong>Import URL:</strong></p>
+            <code>https://cdn.jsdelivr.net/npm/kalythesainz@1.0.0/dist/kalythesainz.min.js</code>
+            <p style="margin-top: 15px; font-size: 12px; opacity: 0.8">
+                Note: For this demo, we're using local files. In production, use the CDN URL above.
+            </p>
+        </div>
+
+        <script type="module">
+            // Production import (commented out for local testing):
+            // import { Scene, Box, Sphere, Plane, Light, Camera } from 'https://cdn.jsdelivr.net/npm/kalythesainz@1.0.0/dist/kalythesainz.min.js';
+
+            // Local import for testing:
+            import { Scene, Box, Sphere, Plane, Light, Camera } from '../dist/kalythesainz.min.js';
+
+            // Initialize scene with custom configuration
+            const scene = Scene.init('container', {
+                renderer: {
+                    antialias: true,
+                    alpha: true,
+                },
+            });
+
+            // Set up lighting
+            Light.sun(1.2);
+            Light.ambient(0.4);
+
+            // Create multiple objects
+            const box = Box.create(1, 1, 1);
+            box.position = [-2, 0, 0];
+            box.rotation = [0.5, 0.5, 0];
+            box.name = 'Rotating Box';
+
+            const sphere = Sphere.create(0.8, 32);
+            sphere.position = [0, 0, 0];
+            sphere.name = 'Center Sphere';
+
+            const plane = Plane.create(2, 2);
+            plane.position = [2, 0, 0];
+            plane.rotation = [0, 0.5, 0];
+            plane.name = 'Tilted Plane';
+
+            // Animate objects
+            let time = 0;
+            function animate() {
+                time += 0.01;
+
+                box.rotation = [time, time * 0.7, 0];
+                sphere.position = [0, Math.sin(time) * 0.5, 0];
+                plane.rotation = [0, time * 0.5, 0];
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            console.log('✓ Scene loaded from jsDelivr CDN');
+            console.log('✓ Objects created:', box.name, sphere.name, plane.name);
+        </script>
+    </body>
+</html>

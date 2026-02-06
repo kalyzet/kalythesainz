@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - CDN Quick Start</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: #1a1a1a;
+                color: white;
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+            .info {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 20px;
+                border-radius: 8px;
+                max-width: 400px;
+            }
+            .info h1 {
+                margin: 0 0 10px 0;
+                font-size: 20px;
+            }
+            .info p {
+                margin: 5px 0;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            .info code {
+                background: #333;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div class="info">
+            <h1>🎨 KALYTHESAINZ CDN Quick Start</h1>
+            <p>
+                This example demonstrates using the framework directly from CDN with zero build
+                tools.
+            </p>
+            <p><strong>Features:</strong></p>
+            <p>✓ ESM imports from CDN</p>
+            <p>✓ No npm or build process</p>
+            <p>✓ Works in modern browsers</p>
+            <p>✓ Three.js auto-loaded</p>
+        </div>
+    </body>
+</html>
+
+        <script type="module">
+            // Import Three.js from CDN
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+            window.THREE = THREE;
+
+            // In production, import from CDN:
+            // import { quickStart, Box, Sphere, Light } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.js';
+
+            // For development, import from local files:
+            import { quickStart, Box, Sphere, Plane, Light } from '../index.js';
+
+            // Initialize scene with one line
+            const scene = quickStart('container');
+
+            // Add some objects
+            const box = Box.create(1, 1, 1);
+            box.position = { x: -2, y: 0, z: 0 };
+            box.name = 'Red Box';
+            scene.add(box);
+
+            const sphere = Sphere.create(0.8, 32);
+            sphere.position = { x: 2, y: 0, z: 0 };
+            sphere.name = 'Blue Sphere';
+            scene.add(sphere);
+
+            const plane = Plane.create(10, 10);
+            plane.position = { x: 0, y: -1, z: 0 };
+            plane.rotation = { x: -Math.PI / 2, y: 0, z: 0 };
+            plane.name = 'Ground Plane';
+            scene.add(plane);
+
+            // Add additional lighting
+            Light.ambient(0.4);
+            Light.point(5, 5, 5, 0.8);
+
+            // Animate objects
+            function animate() {
+                box.rotation = {
+                    x: box.rotation.x + 0.01,
+                    y: box.rotation.y + 0.01,
+                    z: 0,
+                };
+
+                sphere.position = {
+                    x: Math.sin(Date.now() * 0.001) * 2,
+                    y: Math.abs(Math.sin(Date.now() * 0.002)) + 0.8,
+                    z: 0,
+                };
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            console.log('Scene initialized with', scene.objects.length, 'objects');
+            console.log('Framework version:', '1.0.0');
+        </script>
+    </body>
+</html>
