@@ -928,8 +928,8 @@ MIT License - lihat file [LICENSE](LICENSE) untuk detail.
 ## 📞 Support / Dukungan
 
 - 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/your-username/kalythesainz/issues)
-- 💬 [Discussions](https://github.com/your-username/kalythesainz/discussions)
+- 🐛 [Issue Tracker](https://github.com/kalyzet/kalythesainz/issues)
+- 💬 [Discussions](https://github.com/kalyzet/kalythesainz/discussions)
 - 📧 Email: muhammadhaikal3037@gmail.com
 
 ## ⭐ Star History
