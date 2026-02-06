@@ -583,8 +583,6 @@ scene.add(customObj);
 
 ## 🔧 Konfigurasi Lanjutan / Advanced Configuration
 
-## 🔧 Konfigurasi Lanjutan / Advanced Configuration
-
 ```javascript
 import { Config, App } from 'kalythesainz';
 
