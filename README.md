@@ -815,7 +815,7 @@ window.addEventListener('beforeunload', () => {
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/kalythesainz.git
+git clone https://github.com/kalyzet/kalythesainz.git
 cd kalythesainz
 
 # Install dependencies
