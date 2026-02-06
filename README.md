@@ -930,7 +930,7 @@ MIT License - lihat file [LICENSE](LICENSE) untuk detail.
 - 📖 [Documentation](docs/)
 - 🐛 [Issue Tracker](https://github.com/your-username/kalythesainz/issues)
 - 💬 [Discussions](https://github.com/your-username/kalythesainz/discussions)
-- 📧 Email: support@kalythesainz.dev
+- 📧 Email: muhammadhaikal3037@gmail.com
 
 ## ⭐ Star History
 
@@ -938,4 +938,4 @@ Jika framework ini membantu Anda, berikan ⭐ di GitHub!
 
 ---
 
-**Made with ❤️ by KALYTHESAINZ Team**
+**Made by Kalyzet**
