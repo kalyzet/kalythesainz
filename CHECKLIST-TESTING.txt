@@ -1,0 +1,261 @@
+================================================================================
+                    CHECKLIST TESTING - KALYTHESAINZ FRAMEWORK
+================================================================================
+
+
+CHECKLIST SEBELUM TESTING:
+---------------------------
+
+Pastikan Anda sudah:
+
+[ ] Baca dokumentasi quick start (INSTRUKSI-SINGKAT.txt atau MULAI-DISINI.md)
+[ ] Tahu cara menjalankan HTTP server
+[ ] Tahu URL yang benar (http://localhost:8000/...)
+[ ] Tahu file test mana yang akan digunakan (recommended: test-ultra-simple.html)
+
+
+CHECKLIST LANGKAH TESTING:
+---------------------------
+
+Step 1: Persiapan
+[ ] Buka terminal / command prompt
+[ ] Navigate ke folder project (D:/Framework/kalythesainz)
+
+Step 2: Jalankan Server
+[ ] Windows: Double-click start-test.bat
+    ATAU
+[ ] Mac/Linux: Ketik "python3 -m http.server 8000"
+[ ] Lihat pesan "Serving HTTP on 0.0.0.0 port 8000..."
+
+Step 3: Buka Browser
+[ ] Buka browser (Chrome/Firefox/Edge/Safari)
+[ ] Ketik URL: http://localhost:8000/test-ultra-simple.html
+[ ] Tekan Enter
+
+Step 4: Verifikasi Hasil
+[ ] Lihat apakah ada 3 objek 3D di layar
+[ ] Lihat apakah objek berputar
+[ ] Lihat console log di bawah layar
+[ ] Cek apakah ada pesan "SUKSES!"
+
+Step 5: Cek Console Browser (Jika Ada Masalah)
+[ ] Tekan F12 untuk buka Developer Tools
+[ ] Klik tab "Console"
+[ ] Screenshot error jika ada
+[ ] Catat error message
+
+
+CHECKLIST VERIFIKASI SUKSES:
+-----------------------------
+
+Framework dianggap SUKSES jika:
+
+[ ] URL di address bar: http://localhost:8000/test-ultra-simple.html
+[ ] Console log menampilkan: "SUKSES! KALYTHESAINZ BERJALAN DENGAN SEMPURNA!"
+[ ] Visual: 3 objek 3D terlihat (box merah, sphere hijau, box biru)
+[ ] Visual: Objek-objek berputar dengan smooth
+[ ] Console browser (F12): Tidak ada error merah
+[ ] FPS: Stabil (jika ada FPS counter)
+
+
+CHECKLIST TROUBLESHOOTING:
+---------------------------
+
+Jika GAGAL, cek hal-hal berikut:
+
+[ ] HTTP Server berjalan?
+    → Cek terminal, harus ada pesan "Serving HTTP on..."
+
+[ ] URL benar?
+    → Harus http://localhost:8000/... (bukan file://...)
+
+[ ] Port benar?
+    → Harus port 8000
+
+[ ] Browser console ada error?
+    → Tekan F12, lihat tab Console
+
+[ ] Internet connection aktif?
+    → Three.js dimuat dari CDN, perlu internet
+
+[ ] Browser support?
+    → Gunakan Chrome, Firefox, Edge, atau Safari (versi terbaru)
+
+[ ] Firewall blocking?
+    → Cek firewall settings
+
+
+CHECKLIST MASALAH UMUM:
+------------------------
+
+Masalah 1: Layar Putih Kosong
+[ ] Cek URL di address bar
+[ ] Pastikan dimulai dengan http:// (bukan file://)
+[ ] Pastikan server berjalan
+[ ] Refresh browser (Ctrl+F5)
+
+Masalah 2: "Loading..." Terus Menerus
+[ ] Cek browser console (F12) untuk error
+[ ] Pastikan internet connection aktif
+[ ] Coba file test lain (test-threejs-only.html)
+
+Masalah 3: Error "Failed to resolve module specifier 'three'"
+[ ] Gunakan file dengan import maps:
+    - test-ultra-simple.html ✅
+    - test-working.html ✅
+    - test-threejs-only.html ✅
+
+Masalah 4: Error "Cannot find module './dist/kalythesainz.js'"
+[ ] Gunakan file yang import dari source:
+    - test-ultra-simple.html ✅
+    - test-working.html ✅
+[ ] Atau build dulu: npm run build
+
+Masalah 5: Server Tidak Jalan
+[ ] Cek apakah Python terinstall: python --version
+[ ] Install Python jika belum ada
+[ ] Coba alternative: npx http-server -p 8000
+
+
+CHECKLIST DIAGNOSTIC:
+----------------------
+
+Jika masih bermasalah, kumpulkan informasi berikut:
+
+[ ] Browser dan versi (contoh: Chrome 120.0.6099.109)
+[ ] Operating system (contoh: Windows 11)
+[ ] URL yang diakses (contoh: http://localhost:8000/test-ultra-simple.html)
+[ ] Error message lengkap dari console (F12)
+[ ] Screenshot layar
+[ ] Screenshot console browser
+
+Lalu tanyakan ke developer dengan informasi di atas.
+
+
+CHECKLIST FILE TEST:
+--------------------
+
+Pilih file test sesuai kebutuhan:
+
+[ ] test-ultra-simple.html ⭐⭐⭐
+    → Untuk: Testing pertama kali, debugging
+    → Fitur: Console log lengkap, auto diagnostics
+
+[ ] test-working.html ⭐⭐
+    → Untuk: Alternative jika test-ultra-simple terlalu verbose
+    → Fitur: Simple dan reliable
+
+[ ] test-threejs-only.html 🔧
+    → Untuk: Isolate masalah (Three.js vs Framework)
+    → Fitur: Test Three.js saja
+
+[ ] test-simple.html 🐛
+    → Untuk: Test file build (dist/)
+    → Fitur: Debug console detail
+
+[ ] test-local.html 📦
+    → Untuk: Basic test
+    → Fitur: Minimal features
+
+[ ] test-direct-source.html 🔨
+    → Untuk: Development mode
+    → Fitur: Import dari source files
+
+
+CHECKLIST DOKUMENTASI:
+-----------------------
+
+Baca dokumentasi sesuai kebutuhan:
+
+Quick Start:
+[ ] BACA-SAYA-DULU.txt (Start here!)
+[ ] INSTRUKSI-SINGKAT.txt (1 menit)
+[ ] MULAI-DISINI.md (2-3 menit)
+
+Troubleshooting:
+[ ] STATUS-TESTING.md (Comprehensive)
+[ ] CARA-TESTING.md (Detailed)
+
+Reference:
+[ ] DOKUMENTASI-INDEX.md (Index semua docs)
+[ ] TEST-FILES-README.md (Deskripsi file test)
+[ ] TESTING-FLOWCHART.txt (Visual flowchart)
+
+
+CHECKLIST SETELAH TESTING SUKSES:
+----------------------------------
+
+Jika testing berhasil:
+
+[ ] Framework berjalan dengan baik! 🎉
+[ ] Baca README.md untuk cara implementasi
+[ ] Baca docs/GETTING_STARTED.md untuk tutorial
+[ ] Baca docs/API.md untuk API reference
+[ ] Mulai build project Anda! 🚀
+
+
+CHECKLIST NEXT STEPS:
+----------------------
+
+Setelah testing:
+
+Jika SUKSES:
+[ ] Explore framework features
+[ ] Baca dokumentasi API
+[ ] Build something cool!
+
+Jika GAGAL:
+[ ] Baca STATUS-TESTING.md
+[ ] Coba file test lain
+[ ] Screenshot error
+[ ] Tanyakan developer
+
+
+QUICK REFERENCE:
+----------------
+
+Command:
+  Windows:        start-test.bat
+  Mac/Linux:      python3 -m http.server 8000
+
+URL:
+  Recommended:    http://localhost:8000/test-ultra-simple.html
+  Alternative:    http://localhost:8000/test-working.html
+  Diagnostic:     http://localhost:8000/test-threejs-only.html
+
+Docs:
+  Quick:          INSTRUKSI-SINGKAT.txt
+  Guide:          MULAI-DISINI.md
+  Detailed:       STATUS-TESTING.md
+
+
+SUMMARY:
+--------
+
+Total Checklist Items: 50+
+
+Estimated Time:
+  - Quick Start: 2-3 menit
+  - Full Testing: 5-10 menit
+  - Troubleshooting: 10-15 menit (jika ada masalah)
+
+Success Rate:
+  - test-ultra-simple.html: 95%+ (dengan HTTP server)
+  - test-working.html: 90%+
+  - test-threejs-only.html: 98%+
+
+
+GOOD LUCK! 🍀
+-------------
+
+Semoga testing Anda berhasil!
+
+Jika ada pertanyaan, jangan ragu untuk bertanya.
+
+Selamat coding! 🚀
+
+
+================================================================================
+                              - Kiro AI Assistant -
+                            7 Februari 2026
+================================================================================

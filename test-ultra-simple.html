@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Ultra Simple Test</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Courier New', monospace;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            #container {
+                flex: 1;
+                background: #000;
+            }
+
+            #console {
+                background: rgba(0, 0, 0, 0.95);
+                padding: 20px;
+                max-height: 300px;
+                overflow-y: auto;
+                border-top: 3px solid #667eea;
+            }
+
+            .log {
+                padding: 8px;
+                margin: 4px 0;
+                border-left: 4px solid #4caf50;
+                background: rgba(76, 175, 80, 0.1);
+            }
+
+            .log.error {
+                border-left-color: #f44336;
+                background: rgba(244, 67, 54, 0.1);
+                color: #ff6b6b;
+            }
+
+            .log.info {
+                border-left-color: #2196f3;
+                background: rgba(33, 150, 243, 0.1);
+                color: #64b5f6;
+            }
+
+            .log.success {
+                border-left-color: #4caf50;
+                background: rgba(76, 175, 80, 0.1);
+                color: #81c784;
+            }
+
+            h1 {
+                text-align: center;
+                padding: 20px;
+                background: rgba(0, 0, 0, 0.3);
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>🚀 KALYTHESAINZ - Ultra Simple Test</h1>
+        <div id="container"></div>
+        <div id="console"></div>
+
+        <!-- Import Maps untuk resolve 'three' -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+                }
+            }
+        </script>
+
+        <script type="module">
+            const consoleEl = document.getElementById('console');
+
+            function log(message, type = 'info') {
+                const div = document.createElement('div');
+                div.className = `log ${type}`;
+                div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                consoleEl.appendChild(div);
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+                console.log(message);
+            }
+
+            async function main() {
+                try {
+                    log('🔧 Step 1: Loading Three.js...', 'info');
+                    const THREE = await import('three');
+                    window.THREE = THREE;
+                    log(`✅ Three.js loaded! Version: ${THREE.REVISION}`, 'success');
+
+                    log('🔧 Step 2: Loading Scene module...', 'info');
+                    const { Scene } = await import('./engine/Scene.js');
+                    log('✅ Scene module loaded!', 'success');
+
+                    log('🔧 Step 3: Loading Box module...', 'info');
+                    const { Box } = await import('./objects/Box.js');
+                    log('✅ Box module loaded!', 'success');
+
+                    log('🔧 Step 4: Loading Sphere module...', 'info');
+                    const { Sphere } = await import('./objects/Sphere.js');
+                    log('✅ Sphere module loaded!', 'success');
+
+                    log('🔧 Step 5: Loading Light module...', 'info');
+                    const { Light } = await import('./engine/Light.js');
+                    log('✅ Light module loaded!', 'success');
+
+                    log('🎬 Step 6: Initializing scene...', 'info');
+                    const scene = Scene.init('container');
+                    log('✅ Scene initialized!', 'success');
+
+                    log('💡 Step 7: Adding lights...', 'info');
+                    Light.sun(1.0);
+                    Light.ambient(0.4);
+                    log('✅ Lights added!', 'success');
+
+                    log('📦 Step 8: Creating 3D objects...', 'info');
+
+                    // Red Box
+                    const box = Box.create(1, 1, 1);
+                    box.position = { x: -2.5, y: 0, z: 0 };
+                    scene.add(box);
+                    box.threeMesh.material.color.setHex(0xff0000);
+                    log('  ✓ Red box created', 'success');
+
+                    // Green Sphere
+                    const sphere = Sphere.create(0.8, 32);
+                    sphere.position = { x: 0, y: 0, z: 0 };
+                    scene.add(sphere);
+                    sphere.threeMesh.material.color.setHex(0x00ff00);
+                    log('  ✓ Green sphere created', 'success');
+
+                    // Blue Box
+                    const box2 = Box.create(0.8, 0.8, 0.8);
+                    box2.position = { x: 2.5, y: 0, z: 0 };
+                    scene.add(box2);
+                    box2.threeMesh.material.color.setHex(0x0000ff);
+                    log('  ✓ Blue box created', 'success');
+
+                    log(`✅ Total objects: ${scene.objects.length}`, 'success');
+
+                    log('🎥 Step 9: Starting animation...', 'info');
+                    let frame = 0;
+                    function animate() {
+                        frame++;
+                        box.rotation = { x: frame * 0.01, y: frame * 0.01, z: 0 };
+                        sphere.rotation = { x: 0, y: frame * 0.02, z: 0 };
+                        box2.rotation = { x: frame * 0.015, y: 0, z: frame * 0.015 };
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+                    log('✅ Animation started!', 'success');
+
+                    log('', 'info');
+                    log('🎉🎉🎉 SUKSES! KALYTHESAINZ BERJALAN DENGAN SEMPURNA! 🎉🎉🎉', 'success');
+                    log('✨ Anda seharusnya melihat 3 objek 3D berputar di atas', 'success');
+                    log(
+                        '📦 Red Box (kiri) | 🟢 Green Sphere (tengah) | 🔵 Blue Box (kanan)',
+                        'info',
+                    );
+                } catch (error) {
+                    log(`❌ ERROR: ${error.message}`, 'error');
+                    log(`📍 Stack: ${error.stack}`, 'error');
+                    console.error('Full error:', error);
+
+                    // Diagnostic info
+                    log('', 'info');
+                    log('🔍 DIAGNOSTIC INFO:', 'info');
+                    log(`  - Browser: ${navigator.userAgent}`, 'info');
+                    log(`  - Protocol: ${window.location.protocol}`, 'info');
+                    log(`  - Host: ${window.location.host}`, 'info');
+                    log(`  - THREE available: ${typeof window.THREE !== 'undefined'}`, 'info');
+
+                    if (window.location.protocol === 'file:') {
+                        log('', 'error');
+                        log('⚠️ MASALAH TERDETEKSI: File dibuka dengan file:// protocol!', 'error');
+                        log('📝 SOLUSI: Gunakan HTTP server!', 'error');
+                        log('', 'info');
+                        log('Jalankan command ini di terminal:', 'info');
+                        log('  python -m http.server 8000', 'info');
+                        log('', 'info');
+                        log('Lalu buka browser ke:', 'info');
+                        log('  http://localhost:8000/test-ultra-simple.html', 'info');
+                    }
+                }
+            }
+
+            // Start
+            log('🚀 Starting KALYTHESAINZ test...', 'info');
+            main();
+        </script>
+    </body>
+</html>

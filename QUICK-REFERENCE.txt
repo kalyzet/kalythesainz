@@ -1,0 +1,255 @@
+================================================================================
+                    QUICK REFERENCE - KALYTHESAINZ TESTING
+================================================================================
+
+
+SUPER QUICK START:
+------------------
+
+Windows:
+  1. start-test.bat
+  2. http://localhost:8000/test-ultra-simple.html
+
+Mac/Linux:
+  1. python3 -m http.server 8000
+  2. http://localhost:8000/test-ultra-simple.html
+
+
+COMMANDS:
+---------
+
+Start Server:
+  Windows:        start-test.bat
+  Mac/Linux:      python3 -m http.server 8000
+  Alternative:    python -m http.server 8000
+  Node.js:        npx http-server -p 8000
+
+Stop Server:
+  Ctrl+C
+
+
+URLS:
+-----
+
+Recommended:
+  http://localhost:8000/test-ultra-simple.html
+
+Alternative:
+  http://localhost:8000/test-working.html
+  http://localhost:8000/test-threejs-only.html
+  http://localhost:8000/test-simple.html
+  http://localhost:8000/test-local.html
+
+
+FILE TEST:
+----------
+
+test-ultra-simple.html      ⭐⭐⭐ Console log + auto diagnostics
+test-working.html           ⭐⭐  Simple dan reliable
+test-threejs-only.html      🔧   Test Three.js saja
+test-simple.html            🐛   Debug mode
+test-local.html             📦   Basic test
+
+
+DOKUMENTASI:
+-------------
+
+Quick Start:
+  BACA-SAYA-DULU.txt          Start here!
+  INSTRUKSI-SINGKAT.txt       1 menit
+  MULAI-DISINI.md             2-3 menit
+
+Troubleshooting:
+  STATUS-TESTING.md           Comprehensive
+  CARA-TESTING.md             Detailed
+
+Reference:
+  DOKUMENTASI-INDEX.md        Index semua docs
+  TESTING-FLOWCHART.txt       Visual flowchart
+  CHECKLIST-TESTING.txt       Checklist lengkap
+
+
+TROUBLESHOOTING:
+----------------
+
+Layar putih kosong:
+  → Gunakan HTTP server (bukan file://)
+
+"Loading..." terus:
+  → Cek console (F12) untuk error
+  → Pastikan internet aktif
+
+Module error:
+  → Gunakan test-ultra-simple.html
+
+Cannot find dist:
+  → Gunakan test-ultra-simple.html
+  → Atau: npm run build
+
+Server tidak jalan:
+  → Install Python
+  → Atau: npx http-server -p 8000
+
+
+BROWSER SHORTCUTS:
+------------------
+
+Open Console:       F12
+Refresh:            Ctrl+R atau F5
+Hard Refresh:       Ctrl+Shift+R atau Ctrl+F5
+View Source:        Ctrl+U
+
+
+EXPECTED RESULT:
+----------------
+
+✅ 3 objek 3D berputar
+✅ Console log hijau
+✅ Pesan "SUKSES!"
+✅ Tidak ada error merah
+
+
+DIAGNOSTIC:
+-----------
+
+Cek URL:            Harus http:// (bukan file://)
+Cek Server:         Terminal harus show "Serving HTTP..."
+Cek Console:        F12 → Console tab
+Cek Internet:       Three.js dari CDN
+Cek Browser:        Chrome/Firefox/Edge/Safari
+
+
+COMMON ERRORS:
+--------------
+
+"Failed to resolve module specifier 'three'"
+  → Gunakan file dengan import maps
+
+"Cannot find module './dist/kalythesainz.js'"
+  → Gunakan test-ultra-simple.html atau build dulu
+
+"Failed to fetch"
+  → Server tidak jalan atau port salah
+
+"CORS error"
+  → Gunakan HTTP server (bukan file://)
+
+
+BUILD COMMANDS:
+---------------
+
+Install:            npm install
+Build:              npm run build
+Test:               npm test
+Dev Server:         npm run dev
+
+
+PROJECT STRUCTURE:
+------------------
+
+core/               Framework core
+engine/             3D engine
+objects/            3D objects
+utils/              Utilities
+tools/              Visual tools
+dist/               Build output
+docs/               Documentation
+examples/           Example files
+tests/              Test files
+
+
+PORTS:
+------
+
+Default:            8000
+Alternative:        3000, 8080, 5000
+
+
+BROWSER SUPPORT:
+----------------
+
+✅ Chrome           Latest
+✅ Firefox          Latest
+✅ Edge             Latest
+✅ Safari           Latest
+❌ IE               Not supported
+
+
+REQUIREMENTS:
+-------------
+
+✅ HTTP Server      (Python/Node.js)
+✅ Modern Browser   (Chrome/Firefox/Edge/Safari)
+✅ Internet         (untuk Three.js CDN)
+❌ Build            (tidak perlu untuk test-ultra-simple.html)
+
+
+SUCCESS CRITERIA:
+-----------------
+
+✅ URL: http://localhost:8000/...
+✅ Console: "SUKSES! ..."
+✅ Visual: 3 objek 3D berputar
+✅ Console: Tidak ada error
+✅ FPS: Stabil
+
+
+CONTACT:
+--------
+
+Issues:             Screenshot error + console log
+Info Needed:        Browser, OS, URL, Error message
+
+
+TIPS:
+-----
+
+• Gunakan test-ultra-simple.html untuk testing pertama
+• Selalu gunakan HTTP server (bukan file://)
+• Cek console (F12) jika ada masalah
+• Hard refresh (Ctrl+Shift+R) jika cache issue
+• Screenshot error untuk debugging
+
+
+SHORTCUTS:
+----------
+
+Quick Test:
+  start-test.bat && http://localhost:8000/test-ultra-simple.html
+
+Quick Diagnostic:
+  http://localhost:8000/test-threejs-only.html
+
+Quick Build:
+  npm run build && http://localhost:8000/test-simple.html
+
+
+VERSION INFO:
+-------------
+
+Framework:          1.0.0
+Three.js:           0.160.0
+Status:             ✅ Ready for testing
+Last Update:        7 Februari 2026
+
+
+LINKS:
+------
+
+Python:             https://www.python.org/downloads/
+Node.js:            https://nodejs.org/
+Three.js:           https://threejs.org/
+
+
+NOTES:
+------
+
+• Package belum dipublish ke npm
+• CDN URLs tidak akan bekerja
+• Gunakan testing lokal dengan HTTP server
+• Import langsung dari source files
+
+
+================================================================================
+                    PRINT THIS FOR QUICK REFERENCE! 📄
+================================================================================

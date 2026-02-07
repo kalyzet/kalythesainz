@@ -24,26 +24,518 @@ A simple 3D web framework built on top of Three.js with declarative API and visu
 - 🐛 [Troubleshooting](docs/TROUBLESHOOTING.md) - Masalah umum dan solusi
 - 💡 [Examples](examples/) - Aplikasi contoh yang berfungsi
 
+## 🔍 Cara Kerja Framework / How It Works
+
+### Arsitektur Framework
+
+KALYTHESAINZ dibangun dengan arsitektur berlapis yang modular:
+
+```
+┌─────────────────────────────────────────┐
+│           User Application              │
+│  (Your HTML/JS/React/Next.js code)      │
+└─────────────────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────┐
+│        KALYTHESAINZ Framework           │
+│  ┌───────────────────────────────────┐  │
+│  │  Tools Layer                      │  │
+│  │  (Inspector, SceneTree, Gizmo)    │  │
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │  Objects Layer                    │  │
+│  │  (Box, Sphere, Plane, Object3D)   │  │
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │  Engine Layer                     │  │
+│  │  (Scene, Camera, Light, Renderer) │  │
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │  Core Layer                       │  │
+│  │  (App, Config, EventBus, Plugin)  │  │
+│  └───────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────┐
+│            Three.js Library             │
+│     (3D Rendering Engine)               │
+└─────────────────────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────┐
+│            Browser APIs                 │
+│  (WebGL, Canvas, DOM, Window)           │
+└─────────────────────────────────────────┘
+```
+
+### Mengapa Perlu HTTP Server?
+
+Framework ini **memerlukan HTTP server** untuk development. Ini bukan limitasi framework, tapi **requirement dari teknologi web modern**:
+
+#### 1. **ES Modules Requirement**
+
+Framework menggunakan ES Modules (`import/export`):
+
+```javascript
+import { Scene } from './engine/Scene.js';
+import { Box } from './objects/Box.js';
+```
+
+**Browser memblokir ES modules dengan `file://` protocol** karena security policy (CORS). Browser hanya mengizinkan ES modules melalui HTTP/HTTPS.
+
+#### 2. **Import Maps**
+
+Framework menggunakan import maps untuk dependency resolution:
+
+```html
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+        }
+    }
+</script>
+```
+
+Import maps tidak bekerja dengan `file://` protocol.
+
+#### 3. **CORS Policy**
+
+Browser modern memiliki Cross-Origin Resource Sharing (CORS) policy yang mencegah loading resources dari `file://` untuk keamanan.
+
+### HTTP Server Itu Mudah!
+
+Menjalankan HTTP server sangat mudah:
+
+```bash
+# Python (paling mudah - 1 command)
+python -m http.server 8000
+
+# Node.js
+npx http-server -p 8000
+
+# VS Code
+# Install extension "Live Server", klik kanan HTML, pilih "Open with Live Server"
+
+# Windows
+# Double-click: start-test.bat
+```
+
+### Ini Standar Web Development Modern
+
+**Semua framework 3D web modern memerlukan HTTP server:**
+
+- ✅ Three.js - Perlu HTTP server
+- ✅ Babylon.js - Perlu HTTP server
+- ✅ A-Frame - Perlu HTTP server
+- ✅ React Three Fiber - Perlu HTTP server
+- ✅ PlayCanvas - Perlu HTTP server
+
+**Untuk production/deployment:**
+
+- User akhir **tidak perlu** HTTP server
+- Aplikasi di-host di web server (Netlify, Vercel, GitHub Pages, dll)
+- User tinggal buka URL di browser
+
+**Untuk development:**
+
+- Developer perlu HTTP server (tapi sangat mudah - 1 command)
+- Sudah disediakan `start-test.bat` untuk Windows
+- Atau gunakan VS Code Live Server extension
+
 ## 🚀 Cara Implementasi / Implementation Guide
 
-### Metode 1: CDN (Tanpa Instalasi - Paling Mudah)
+### ⚠️ Catatan Penting / Important Note
 
-Cara tercepat untuk memulai adalah menggunakan CDN. Tidak perlu npm, tidak perlu build tools, hanya HTML dan JavaScript:
+**Package ini belum dipublikasikan ke npm.** Untuk menggunakan framework ini, Anda perlu:
 
-**Langkah 1: Buat file HTML**
+1. Clone repository ini
+2. Build framework dengan `npm run build`
+3. Gunakan file dari folder `dist/`
+
+**This package is not yet published to npm.** To use this framework, you need to:
+
+1. Clone this repository
+2. Build the framework with `npm run build`
+3. Use files from the `dist/` folder
+
+---
+
+## 🎯 Implementasi di Berbagai Framework / Framework Integration
+
+### 🔷 Next.js (React with SSR)
+
+Framework ini **kompatibel dengan Next.js**, tapi perlu setup khusus karena Next.js menggunakan Server-Side Rendering (SSR).
+
+#### Metode 1: Dynamic Import dengan `ssr: false` (RECOMMENDED)
+
+```jsx
+// pages/3d-scene.js (Pages Router)
+// atau app/3d-scene/page.js (App Router)
+'use client'; // Untuk Next.js 13+ App Router
+
+import dynamic from 'next/dynamic';
+
+// Import component dengan SSR disabled
+const ThreeScene = dynamic(() => import('../components/ThreeScene'), {
+    ssr: false,
+    loading: () => <div>Loading 3D Scene...</div>,
+});
+
+export default function ScenePage() {
+    return (
+        <div>
+            <h1>My 3D Scene</h1>
+            <ThreeScene />
+        </div>
+    );
+}
+```
+
+```jsx
+// components/ThreeScene.jsx
+'use client';
+
+import { useEffect, useRef } from 'react';
+
+export default function ThreeScene() {
+    const containerRef = useRef(null);
+    const sceneRef = useRef(null);
+
+    useEffect(() => {
+        // Import hanya di client-side
+        const initScene = async () => {
+            // Import Three.js
+            const THREE = await import('three');
+            window.THREE = THREE;
+
+            // Import KALYTHESAINZ
+            const { Scene, Box, Sphere, Light } = await import('kalythesainz');
+
+            // Initialize scene
+            const scene = Scene.init(containerRef.current.id);
+            sceneRef.current = scene;
+
+            // Setup lighting
+            Light.sun({ intensity: 1.0 });
+            Light.ambient({ intensity: 0.4 });
+
+            // Create objects
+            const box = Box.create(1, 1, 1);
+            box.position = { x: -2, y: 0, z: 0 };
+            scene.add(box);
+
+            const sphere = Sphere.create(0.8, 32);
+            sphere.position = { x: 2, y: 0, z: 0 };
+            scene.add(sphere);
+
+            // Animation
+            let frame = 0;
+            function animate() {
+                frame++;
+                box.rotation = { x: frame * 0.01, y: frame * 0.01, z: 0 };
+                sphere.rotation = { x: 0, y: frame * 0.02, z: 0 };
+                requestAnimationFrame(animate);
+            }
+            animate();
+        };
+
+        initScene();
+
+        // Cleanup
+        return () => {
+            if (sceneRef.current) {
+                sceneRef.current.dispose();
+            }
+        };
+    }, []);
+
+    return (
+        <div
+            id="kalythesainz-container"
+            ref={containerRef}
+            style={{ width: '100%', height: '600px' }}
+        />
+    );
+}
+```
+
+#### Metode 2: Custom Hook untuk Reusability
+
+```jsx
+// hooks/useKalythesainz.js
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+
+export function useKalythesainz(containerId) {
+    const [scene, setScene] = useState(null);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        let sceneInstance = null;
+
+        const initFramework = async () => {
+            try {
+                // Import Three.js
+                const THREE = await import('three');
+                window.THREE = THREE;
+
+                // Import KALYTHESAINZ
+                const KALY = await import('kalythesainz');
+
+                // Initialize scene
+                sceneInstance = KALY.Scene.init(containerId);
+                setScene(sceneInstance);
+                setIsLoaded(true);
+
+                return { scene: sceneInstance, KALY };
+            } catch (error) {
+                console.error('Failed to initialize KALYTHESAINZ:', error);
+                throw error;
+            }
+        };
+
+        initFramework();
+
+        // Cleanup
+        return () => {
+            if (sceneInstance) {
+                sceneInstance.dispose();
+            }
+        };
+    }, [containerId]);
+
+    return { scene, isLoaded, containerRef };
+}
+```
+
+```jsx
+// components/My3DComponent.jsx
+'use client';
+
+import { useEffect } from 'react';
+import { useKalythesainz } from '../hooks/useKalythesainz';
+
+export default function My3DComponent() {
+    const { scene, isLoaded, containerRef } = useKalythesainz('my-3d-container');
+
+    useEffect(() => {
+        if (!isLoaded || !scene) return;
+
+        const setupScene = async () => {
+            const { Light, Box, Sphere } = await import('kalythesainz');
+
+            // Setup lighting
+            Light.sun({ intensity: 1.0 });
+            Light.ambient({ intensity: 0.4 });
+
+            // Create objects
+            const box = Box.create(1, 1, 1);
+            scene.add(box);
+
+            const sphere = Sphere.create(0.8, 32);
+            sphere.position = { x: 2, y: 0, z: 0 };
+            scene.add(sphere);
+        };
+
+        setupScene();
+    }, [scene, isLoaded]);
+
+    return (
+        <div>
+            {!isLoaded && <div>Loading 3D Scene...</div>}
+            <div
+                id="my-3d-container"
+                ref={containerRef}
+                style={{ width: '100%', height: '600px' }}
+            />
+        </div>
+    );
+}
+```
+
+#### ⚠️ Hal Penting untuk Next.js
+
+1. **Selalu gunakan `'use client'`** (Next.js 13+ App Router)
+2. **Dynamic import dengan `ssr: false`** untuk component 3D
+3. **Check `typeof window !== 'undefined'`** sebelum akses browser APIs
+4. **Cleanup di useEffect return** untuk prevent memory leaks
+5. **Import Three.js dan framework di dalam useEffect** (client-side only)
+
+---
+
+### ⚛️ React (Create React App / Vite)
+
+```jsx
+// components/ThreeScene.jsx
+import { useEffect, useRef } from 'react';
+
+export default function ThreeScene() {
+    const containerRef = useRef(null);
+    const sceneRef = useRef(null);
+
+    useEffect(() => {
+        const initScene = async () => {
+            // Import Three.js
+            const THREE = await import('three');
+            window.THREE = THREE;
+
+            // Import KALYTHESAINZ
+            const { Scene, Box, Light } = await import('kalythesainz');
+
+            // Initialize
+            const scene = Scene.init('container');
+            sceneRef.current = scene;
+
+            Light.sun();
+            const box = Box.create(1, 1, 1);
+            scene.add(box);
+        };
+
+        initScene();
+
+        return () => {
+            if (sceneRef.current) {
+                sceneRef.current.dispose();
+            }
+        };
+    }, []);
+
+    return <div id="container" ref={containerRef} style={{ width: '100%', height: '600px' }} />;
+}
+```
+
+---
+
+### 🟢 Vue.js
+
+```vue
+<!-- components/ThreeScene.vue -->
+<template>
+    <div id="container" ref="containerRef" style="width: 100%; height: 600px"></div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const containerRef = ref(null);
+let scene = null;
+
+onMounted(async () => {
+    // Import Three.js
+    const THREE = await import('three');
+    window.THREE = THREE;
+
+    // Import KALYTHESAINZ
+    const { Scene, Box, Light } = await import('kalythesainz');
+
+    // Initialize
+    scene = Scene.init('container');
+    Light.sun();
+
+    const box = Box.create(1, 1, 1);
+    scene.add(box);
+});
+
+onUnmounted(() => {
+    if (scene) {
+        scene.dispose();
+    }
+});
+</script>
+```
+
+---
+
+### 🅰️ Angular
+
+```typescript
+// components/three-scene.component.ts
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+    selector: 'app-three-scene',
+    template: '<div #container style="width: 100%; height: 600px"></div>',
+})
+export class ThreeSceneComponent implements OnInit, OnDestroy {
+    @ViewChild('container', { static: true }) containerRef!: ElementRef;
+    private scene: any;
+
+    async ngOnInit() {
+        // Import Three.js
+        const THREE = await import('three');
+        (window as any).THREE = THREE;
+
+        // Import KALYTHESAINZ
+        const { Scene, Box, Light } = await import('kalythesainz');
+
+        // Initialize
+        this.scene = Scene.init(this.containerRef.nativeElement);
+        Light.sun();
+
+        const box = Box.create(1, 1, 1);
+        this.scene.add(box);
+    }
+
+    ngOnDestroy() {
+        if (this.scene) {
+            this.scene.dispose();
+        }
+    }
+}
+```
+
+---
+
+### 🔶 Svelte
+
+```svelte
+<!-- components/ThreeScene.svelte -->
+<script>
+  import { onMount, onDestroy } from 'svelte';
+
+  let containerRef;
+  let scene;
+
+  onMount(async () => {
+    // Import Three.js
+    const THREE = await import('three');
+    window.THREE = THREE;
+
+    // Import KALYTHESAINZ
+    const { Scene, Box, Light } = await import('kalythesainz');
+
+    // Initialize
+    scene = Scene.init('container');
+    Light.sun();
+
+    const box = Box.create(1, 1, 1);
+    scene.add(box);
+  });
+
+  onDestroy(() => {
+    if (scene) {
+      scene.dispose();
+    }
+  });
+</script>
+
+<div id="container" bind:this={containerRef} style="width: 100%; height: 600px"></div>
+```
+
+---
+
+### 📦 Vanilla JavaScript (No Framework)
 
 ```html
 <!DOCTYPE html>
-<html lang="id">
+<html>
     <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>KALYTHESAINZ - Proyek Saya</title>
+        <title>KALYTHESAINZ - Vanilla JS</title>
         <style>
             body {
                 margin: 0;
-                overflow: hidden;
-                font-family: Arial, sans-serif;
             }
             #container {
                 width: 100vw;
@@ -55,26 +547,120 @@ Cara tercepat untuk memulai adalah menggunakan CDN. Tidak perlu npm, tidak perlu
         <div id="container"></div>
 
         <script type="module">
-            // Langkah 2: Import Three.js (dependency)
+            // Import Three.js
             import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
             window.THREE = THREE;
 
-            // Langkah 3: Import KALYTHESAINZ
-            import {
-                Scene,
-                Box,
-                Sphere,
-                Light,
-            } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.js';
+            // Import KALYTHESAINZ
+            import { Scene, Box, Light } from './dist/kalythesainz.js';
 
-            // Langkah 4: Inisialisasi scene
+            // Initialize
+            const scene = Scene.init('container');
+            Light.sun();
+
+            const box = Box.create(1, 1, 1);
+            scene.add(box);
+        </script>
+    </body>
+</html>
+```
+
+---
+
+### 🔧 Troubleshooting untuk Framework Modern
+
+#### Error: "window is not defined" (Next.js/SSR)
+
+**Solusi:** Gunakan dynamic import dengan `ssr: false`
+
+#### Error: "document is not defined" (Next.js/SSR)
+
+**Solusi:** Check `typeof window !== 'undefined'` sebelum akses DOM
+
+#### Error: "WebGL context" (React/Vue/Angular)
+
+**Solusi:** Pastikan code hanya dijalankan di client-side (useEffect/onMounted)
+
+#### Build Error (Webpack/Vite)
+
+**Solusi:** Pastikan semua import Three.js dan framework ada di dalam lifecycle hooks
+
+---
+
+### ✅ Framework Compatibility
+
+| Framework      | Status       | Notes                                      |
+| -------------- | ------------ | ------------------------------------------ |
+| **Next.js**    | ✅ Supported | Gunakan dynamic import dengan `ssr: false` |
+| **React**      | ✅ Supported | Import di useEffect                        |
+| **Vue.js**     | ✅ Supported | Import di onMounted                        |
+| **Angular**    | ✅ Supported | Import di ngOnInit                         |
+| **Svelte**     | ✅ Supported | Import di onMount                          |
+| **Vanilla JS** | ✅ Supported | Direct import                              |
+| **Nuxt.js**    | ✅ Supported | Sama seperti Next.js (SSR handling)        |
+| **Gatsby**     | ✅ Supported | Sama seperti Next.js (SSR handling)        |
+
+---
+
+## 📝 Metode Implementasi Lokal / Local Implementation Methods
+
+### Metode 1: Penggunaan Lokal (Setelah Build) - RECOMMENDED
+
+**Langkah 1: Clone dan Build**
+
+```bash
+# Clone repository
+git clone https://github.com/your-username/kalythesainz.git
+cd kalythesainz
+
+# Install dependencies
+npm install
+
+# Build framework
+npm run build
+```
+
+**Langkah 2: Buat file HTML**
+
+Buat file `test.html` di root folder project:
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Test Lokal</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+
+        <script type="module">
+            // Import Three.js dari CDN
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+            window.THREE = THREE;
+
+            // Import KALYTHESAINZ dari file lokal (setelah build)
+            import { Scene, Box, Sphere, Light } from './dist/kalythesainz.js';
+
+            // Inisialisasi scene
             const scene = Scene.init('container');
 
-            // Langkah 5: Tambahkan lighting
+            // Setup lighting
             Light.sun(1.0);
             Light.ambient(0.4);
 
-            // Langkah 6: Buat dan tambahkan objek 3D
+            // Buat objek 3D
             const box = Box.create(1, 1, 1);
             box.position = { x: -2, y: 0, z: 0 };
             scene.add(box);
@@ -89,11 +675,108 @@ Cara tercepat untuk memulai adalah menggunakan CDN. Tidak perlu npm, tidak perlu
 </html>
 ```
 
-**Langkah 7: Buka di Browser**
+**Langkah 3: Jalankan dengan Local Server**
 
-Simpan file sebagai `index.html` dan buka di browser modern. Anda akan melihat scene 3D dengan box dan sphere!
+```bash
+# Gunakan Python
+python -m http.server 8000
 
-**CDN Providers yang Tersedia:**
+# Atau gunakan Node.js http-server
+npx http-server -p 8000
+
+# Atau gunakan Live Server di VS Code
+# Klik kanan pada test.html > Open with Live Server
+```
+
+**Langkah 4: Buka di Browser**
+
+Buka `http://localhost:8000/test.html` di browser Anda.
+
+### Metode 2: Menggunakan Vite Dev Server (Untuk Development)
+
+Cara termudah untuk development:
+
+```bash
+# Di folder project kalythesainz
+npm run dev
+```
+
+Kemudian buka `http://localhost:5173` dan edit file di folder `ui/`.
+
+### Metode 3: Import Langsung dari Source (Tanpa Build)
+
+Jika Anda tidak ingin build, gunakan import langsung dari source files:
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>KALYTHESAINZ - Direct Import</title>
+        <style>
+            body {
+                margin: 0;
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+
+        <script type="module">
+            // Import Three.js
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+            window.THREE = THREE;
+
+            // Import langsung dari source files
+            import { Scene } from './engine/Scene.js';
+            import { Box } from './objects/Box.js';
+            import { Sphere } from './objects/Sphere.js';
+            import { Light } from './engine/Light.js';
+
+            const scene = Scene.init('container');
+            Light.sun();
+            Light.ambient(0.4);
+
+            const box = Box.create(1, 1, 1);
+            box.position = { x: -2, y: 0, z: 0 };
+            scene.add(box);
+
+            const sphere = Sphere.create(0.8, 32);
+            sphere.position = { x: 2, y: 0, z: 0 };
+            scene.add(sphere);
+        </script>
+    </body>
+</html>
+```
+
+### Metode 4: CDN (Setelah Publish ke NPM)
+
+**⚠️ Belum tersedia - Package belum dipublish ke npm**
+
+Setelah package dipublish, Anda bisa menggunakan CDN:
+
+```html
+<script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    window.THREE = THREE;
+
+    import {
+        Scene,
+        Box,
+        Light,
+    } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.js';
+
+    const scene = Scene.init('container');
+    Light.sun();
+    const box = Box.create(1, 1, 1);
+    scene.add(box);
+</script>
+```
+
+**CDN Providers yang Tersedia (setelah publish):**
 
 - **jsDelivr** (Direkomendasikan):
     ```

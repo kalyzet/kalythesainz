@@ -1,0 +1,82 @@
+================================================================================
+                    KALYTHESAINZ FRAMEWORK - TESTING
+================================================================================
+
+LANGKAH 1: JALANKAN SERVER
+---------------------------
+
+Windows:
+  1. Double-click file: start-test.bat
+  
+Mac/Linux:
+  1. Buka terminal
+  2. Ketik: python3 -m http.server 8000
+  3. Tekan Enter
+
+
+LANGKAH 2: BUKA BROWSER
+------------------------
+
+Buka browser (Chrome/Firefox/Edge) dan ketik di address bar:
+
+  http://localhost:8000/test-ultra-simple.html
+
+
+LANGKAH 3: LIHAT HASILNYA
+--------------------------
+
+Jika SUKSES, Anda akan melihat:
+  ✓ 3 objek 3D berputar (box merah, sphere hijau, box biru)
+  ✓ Console log hijau di bawah layar
+  ✓ Pesan "SUKSES! KALYTHESAINZ BERJALAN DENGAN SEMPURNA!"
+
+
+TROUBLESHOOTING
+---------------
+
+Masalah: Layar putih kosong
+Solusi: Pastikan URL dimulai dengan http:// (bukan file://)
+
+Masalah: Error di console
+Solusi: Tekan F12, screenshot error, tanyakan ke developer
+
+Masalah: Server tidak jalan
+Solusi: Install Python dari https://www.python.org/downloads/
+
+
+FILE TEST LAINNYA
+-----------------
+
+Jika test-ultra-simple.html tidak bekerja, coba:
+
+  http://localhost:8000/test-threejs-only.html  (Test Three.js saja)
+  http://localhost:8000/test-working.html       (Alternative test)
+  http://localhost:8000/test-simple.html        (Debug mode)
+
+
+DOKUMENTASI LENGKAP
+--------------------
+
+Baca file-file ini untuk info lebih detail:
+  - MULAI-DISINI.md          (Panduan super cepat)
+  - STATUS-TESTING.md        (Status dan troubleshooting lengkap)
+  - CARA-TESTING.md          (Cara testing detail)
+  - TEST-FILES-README.md     (Daftar semua file test)
+
+
+PENTING!
+--------
+
+❌ JANGAN buka file HTML dengan double-click!
+✓ HARUS menggunakan HTTP server!
+
+URL yang BENAR:
+  http://localhost:8000/test-ultra-simple.html
+
+URL yang SALAH:
+  file:///D:/Framework/kalythesainz/test-ultra-simple.html
+
+
+================================================================================
+                              SELAMAT MENCOBA! 🚀
+================================================================================

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Simple Test</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                background: #1a1a1a;
+                color: white;
+            }
+
+            #container {
+                width: 100vw;
+                height: 100vh;
+                background: #000;
+            }
+
+            #debug {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.9);
+                color: #0f0;
+                padding: 20px;
+                border-radius: 8px;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                max-width: 400px;
+                max-height: 80vh;
+                overflow-y: auto;
+                border: 1px solid #0f0;
+            }
+
+            .log-entry {
+                margin: 5px 0;
+                padding: 5px;
+                border-left: 3px solid #0f0;
+                padding-left: 10px;
+            }
+
+            .log-error {
+                color: #f00;
+                border-left-color: #f00;
+            }
+
+            .log-success {
+                color: #0f0;
+                border-left-color: #0f0;
+            }
+
+            .log-info {
+                color: #ff0;
+                border-left-color: #ff0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+
+        <div id="debug">
+            <h3 style="color: #0ff; margin-bottom: 10px">🔍 Debug Console</h3>
+            <div id="logs"></div>
+        </div>
+
+        <script type="module">
+            const logsEl = document.getElementById('logs');
+
+            function log(message, type = 'info') {
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${type}`;
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logsEl.appendChild(entry);
+                logsEl.scrollTop = logsEl.scrollHeight;
+                console.log(message);
+            }
+
+            async function init() {
+                try {
+                    log('🚀 Starting KALYTHESAINZ test...', 'info');
+
+                    // Step 1: Load Three.js
+                    log('📦 Loading Three.js from CDN...', 'info');
+                    const THREE =
+                        await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+                    window.THREE = THREE;
+                    log('✅ Three.js loaded successfully', 'success');
+                    log(`   Version: ${THREE.REVISION}`, 'info');
+
+                    // Step 2: Load KALYTHESAINZ
+                    log('📦 Loading KALYTHESAINZ from ./dist/kalythesainz.js...', 'info');
+                    const KALY = await import('./dist/kalythesainz.js');
+                    log('✅ KALYTHESAINZ loaded successfully', 'success');
+                    log(`   Exports: ${Object.keys(KALY).join(', ')}`, 'info');
+
+                    // Step 3: Initialize Scene
+                    log('🎬 Initializing scene...', 'info');
+                    const scene = KALY.Scene.init('container');
+                    log('✅ Scene initialized', 'success');
+
+                    // Step 4: Add Lighting
+                    log('💡 Adding lights...', 'info');
+                    KALY.Light.sun(1.0);
+                    KALY.Light.ambient(0.4);
+                    log('✅ Lights added', 'success');
+
+                    // Step 5: Create Objects
+                    log('📦 Creating 3D objects...', 'info');
+
+                    const box = KALY.Box.create(1, 1, 1);
+                    box.position = { x: -2, y: 0, z: 0 };
+                    box.name = 'Red Box';
+                    scene.add(box);
+                    box.threeMesh.material.color.setHex(0xff0000);
+                    log('  ✓ Red box created at x:-2', 'success');
+
+                    const sphere = KALY.Sphere.create(0.8, 32);
+                    sphere.position = { x: 0, y: 0, z: 0 };
+                    sphere.name = 'Green Sphere';
+                    scene.add(sphere);
+                    sphere.threeMesh.material.color.setHex(0x00ff00);
+                    log('  ✓ Green sphere created at x:0', 'success');
+
+                    const plane = KALY.Plane.create(1, 1);
+                    plane.position = { x: 2, y: 0, z: 0 };
+                    plane.name = 'Blue Plane';
+                    scene.add(plane);
+                    plane.threeMesh.material.color.setHex(0x0000ff);
+                    log('  ✓ Blue plane created at x:2', 'success');
+
+                    log(`✅ Total objects in scene: ${scene.objects.length}`, 'success');
+
+                    // Step 6: Animation
+                    log('🎥 Starting animation loop...', 'info');
+                    let frame = 0;
+                    function animate() {
+                        frame++;
+
+                        box.rotation = { x: frame * 0.01, y: frame * 0.01, z: 0 };
+                        sphere.rotation = { x: 0, y: frame * 0.02, z: 0 };
+                        plane.rotation = { x: frame * 0.01, y: 0, z: frame * 0.01 };
+
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+                    log('✅ Animation started', 'success');
+
+                    // Success!
+                    log('', 'info');
+                    log('🎉 KALYTHESAINZ BERHASIL DIMUAT!', 'success');
+                    log('✨ Anda seharusnya melihat 3 objek 3D berputar', 'success');
+                } catch (error) {
+                    log(`❌ ERROR: ${error.message}`, 'error');
+                    log(`   Stack: ${error.stack}`, 'error');
+                    console.error('Full error:', error);
+                }
+            }
+
+            // Start initialization
+            init();
+        </script>
+    </body>
+</html>

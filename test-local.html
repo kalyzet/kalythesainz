@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Test Lokal</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                overflow: hidden;
+                background: #1a1a1a;
+            }
+
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #info {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                max-width: 300px;
+            }
+
+            #info h2 {
+                margin-bottom: 10px;
+                color: #4caf50;
+            }
+
+            #info p {
+                margin: 5px 0;
+                line-height: 1.5;
+            }
+
+            .success {
+                color: #4caf50;
+            }
+
+            .error {
+                color: #f44336;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+
+        <div id="info">
+            <h2>🚀 KALYTHESAINZ Framework</h2>
+            <p id="status">Loading...</p>
+            <p id="objects"></p>
+            <p id="fps"></p>
+        </div>
+
+        <script type="module">
+            // Import Three.js dari CDN
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+            window.THREE = THREE;
+
+            // Import KALYTHESAINZ dari file lokal (setelah build)
+            import { Scene, Box, Sphere, Plane, Light } from './dist/kalythesainz.js';
+
+            const statusEl = document.getElementById('status');
+            const objectsEl = document.getElementById('objects');
+            const fpsEl = document.getElementById('fps');
+
+            try {
+                // Inisialisasi scene
+                statusEl.innerHTML = '<span class="success">✅ Initializing scene...</span>';
+                const scene = Scene.init('container');
+
+                // Setup lighting
+                statusEl.innerHTML = '<span class="success">✅ Setting up lights...</span>';
+                Light.sun(1.0);
+                Light.ambient(0.4);
+
+                // Buat objek 3D
+                statusEl.innerHTML = '<span class="success">✅ Creating 3D objects...</span>';
+
+                // Box merah di kiri
+                const box = Box.create(1, 1, 1);
+                box.position = { x: -2, y: 0, z: 0 };
+                box.name = 'Red Box';
+                scene.add(box);
+
+                // Akses Three.js langsung untuk ubah warna
+                box.threeMesh.material.color.setHex(0xff0000);
+
+                // Sphere hijau di tengah
+                const sphere = Sphere.create(0.8, 32);
+                sphere.position = { x: 0, y: 0, z: 0 };
+                sphere.name = 'Green Sphere';
+                scene.add(sphere);
+                sphere.threeMesh.material.color.setHex(0x00ff00);
+
+                // Plane biru di kanan
+                const plane = Plane.create(1, 1);
+                plane.position = { x: 2, y: 0, z: 0 };
+                plane.name = 'Blue Plane';
+                scene.add(plane);
+                plane.threeMesh.material.color.setHex(0x0000ff);
+
+                // Rotasi objek untuk animasi
+                let frame = 0;
+                function animate() {
+                    frame++;
+
+                    // Rotasi box
+                    box.rotation = {
+                        x: frame * 0.01,
+                        y: frame * 0.01,
+                        z: 0,
+                    };
+
+                    // Rotasi sphere
+                    sphere.rotation = {
+                        x: 0,
+                        y: frame * 0.02,
+                        z: 0,
+                    };
+
+                    // Rotasi plane
+                    plane.rotation = {
+                        x: frame * 0.01,
+                        y: 0,
+                        z: frame * 0.01,
+                    };
+
+                    requestAnimationFrame(animate);
+                }
+                animate();
+
+                // Update status
+                statusEl.innerHTML = '<span class="success">✅ Scene ready!</span>';
+                objectsEl.innerHTML = `📦 Objects: ${scene.objects.length}`;
+
+                // FPS counter
+                let lastTime = performance.now();
+                let frames = 0;
+                setInterval(() => {
+                    const now = performance.now();
+                    const fps = Math.round((frames * 1000) / (now - lastTime));
+                    fpsEl.innerHTML = `⚡ FPS: ${fps}`;
+                    frames = 0;
+                    lastTime = now;
+                }, 1000);
+
+                function countFrame() {
+                    frames++;
+                    requestAnimationFrame(countFrame);
+                }
+                countFrame();
+
+                console.log('🎉 KALYTHESAINZ berhasil dimuat!');
+                console.log('Scene objects:', scene.objects);
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                console.error('Error:', error);
+            }
+        </script>
+    </body>
+</html>

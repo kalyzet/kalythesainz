@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KALYTHESAINZ - Working Test</title>
+        <style>
+            body {
+                margin: 0;
+                background: #000;
+                font-family: Arial, sans-serif;
+                color: white;
+            }
+
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #info {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                background: rgba(0, 200, 0, 0.9);
+                padding: 20px;
+                border-radius: 10px;
+                font-size: 16px;
+            }
+
+            #info h2 {
+                margin: 0 0 10px 0;
+            }
+
+            .status {
+                margin: 5px 0;
+                padding: 5px;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="info">
+            <h2>🚀 KALYTHESAINZ Framework</h2>
+            <div class="status" id="status">Loading...</div>
+            <div class="status" id="objects"></div>
+        </div>
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+                }
+            }
+        </script>
+
+        <script type="module">
+            const statusEl = document.getElementById('status');
+            const objectsEl = document.getElementById('objects');
+
+            try {
+                // Import Three.js menggunakan import map
+                statusEl.textContent = '📦 Loading Three.js...';
+                const THREE = await import('three');
+                window.THREE = THREE;
+                statusEl.textContent = '✅ Three.js loaded (v' + THREE.REVISION + ')';
+
+                // Import framework components dari source
+                const { Scene } = await import('./engine/Scene.js');
+                const { Box } = await import('./objects/Box.js');
+                const { Sphere } = await import('./objects/Sphere.js');
+                const { Light } = await import('./engine/Light.js');
+
+                statusEl.textContent = '✅ Framework loaded';
+
+                // Initialize scene
+                const scene = Scene.init('container');
+                statusEl.textContent = '✅ Scene initialized';
+
+                // Add lights
+                Light.sun(1.0);
+                Light.ambient(0.4);
+
+                // Create objects
+                const box = Box.create(1, 1, 1);
+                box.position = { x: -2.5, y: 0, z: 0 };
+                scene.add(box);
+                box.threeMesh.material.color.setHex(0xff0000);
+
+                const sphere = Sphere.create(0.8, 32);
+                sphere.position = { x: 0, y: 0, z: 0 };
+                scene.add(sphere);
+                sphere.threeMesh.material.color.setHex(0x00ff00);
+
+                const box2 = Box.create(0.8, 0.8, 0.8);
+                box2.position = { x: 2.5, y: 0, z: 0 };
+                scene.add(box2);
+                box2.threeMesh.material.color.setHex(0x0000ff);
+
+                statusEl.textContent = '🎉 SUCCESS! Scene ready!';
+                objectsEl.textContent = `📦 Objects: ${scene.objects.length} | Camera ready | Lights active`;
+
+                // Animate
+                let frame = 0;
+                function animate() {
+                    frame++;
+                    box.rotation = { x: frame * 0.01, y: frame * 0.01, z: 0 };
+                    sphere.rotation = { x: 0, y: frame * 0.02, z: 0 };
+                    box2.rotation = { x: frame * 0.015, y: 0, z: frame * 0.015 };
+                    requestAnimationFrame(animate);
+                }
+                animate();
+
+                console.log('🎉 KALYTHESAINZ berhasil dimuat!');
+                console.log('Scene:', scene);
+                console.log('Objects:', scene.objects);
+            } catch (error) {
+                statusEl.textContent = '❌ Error: ' + error.message;
+                statusEl.style.background = 'rgba(200, 0, 0, 0.9)';
+                console.error('Error:', error);
+            }
+        </script>
+    </body>
+</html>
