@@ -38,6 +38,8 @@ mockThree.Color = jest.fn().mockImplementation((color) => ({
 Object.assign(mockThree, {
     WebGLRenderer: jest.fn().mockImplementation(() => ({
         setSize: jest.fn(),
+        setPixelRatio: jest.fn(),
+        setClearColor: jest.fn(),
         render: jest.fn(),
         dispose: jest.fn(),
         domElement: document.createElement('canvas'),
@@ -54,6 +56,7 @@ Object.assign(mockThree, {
         remove: jest.fn(),
         children: [],
         isScene: true,
+        type: 'Scene',
     })),
     PerspectiveCamera: jest.fn().mockImplementation(() => {
         const position = {
@@ -68,6 +71,9 @@ Object.assign(mockThree, {
             toArray: function () {
                 return [this.x, this.y, this.z];
             },
+            clone: function () {
+                return { x: this.x, y: this.y, z: this.z, toArray: () => [this.x, this.y, this.z] };
+            },
         };
         return {
             position,
@@ -80,6 +86,41 @@ Object.assign(mockThree, {
             updateProjectionMatrix: jest.fn(),
             fov: 75,
             aspect: 1,
+            near: 0.1,
+            far: 1000,
+            isCamera: true,
+        };
+    }),
+    OrthographicCamera: jest.fn().mockImplementation(() => {
+        const position = {
+            x: 0,
+            y: 0,
+            z: 0,
+            set: function (x, y, z) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            },
+            toArray: function () {
+                return [this.x, this.y, this.z];
+            },
+            clone: function () {
+                return { x: this.x, y: this.y, z: this.z, toArray: () => [this.x, this.y, this.z] };
+            },
+        };
+        return {
+            position,
+            rotation: {
+                x: 0,
+                y: 0,
+                z: 0,
+            },
+            lookAt: jest.fn(),
+            updateProjectionMatrix: jest.fn(),
+            left: -10,
+            right: 10,
+            top: 10,
+            bottom: -10,
             near: 0.1,
             far: 1000,
             isCamera: true,
@@ -105,6 +146,30 @@ Object.assign(mockThree, {
             intensity: 1,
             color,
             isLight: true,
+            target: {
+                position: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                    set: function (x, y, z) {
+                        this.x = x;
+                        this.y = y;
+                        this.z = z;
+                    },
+                },
+            },
+            castShadow: false,
+            shadow: {
+                camera: {
+                    left: -10,
+                    right: 10,
+                    top: 10,
+                    bottom: -10,
+                    near: 0.1,
+                    far: 50,
+                },
+                mapSize: { width: 1024, height: 1024 },
+            },
         };
     }),
     PointLight: jest.fn().mockImplementation(() => {
@@ -355,6 +420,7 @@ export const {
     WebGLRenderer,
     Scene,
     PerspectiveCamera,
+    OrthographicCamera,
     DirectionalLight,
     PointLight,
     AmbientLight,

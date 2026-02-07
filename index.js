@@ -27,6 +27,7 @@ export {
 
 // Engine Layer exports
 export { Scene } from './engine/Scene.js';
+export { SceneInstance } from './engine/SceneInstance.js';
 export { Renderer } from './engine/Renderer.js';
 export { Camera } from './engine/Camera.js';
 export { Light } from './engine/Light.js';
