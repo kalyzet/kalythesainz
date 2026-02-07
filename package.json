@@ -1,6 +1,6 @@
 {
     "name": "kalythesainz",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A simple 3D web framework built on top of Three.js with declarative API and visual tooling",
     "type": "module",
     "main": "dist/kalythesainz.umd.min.js",
