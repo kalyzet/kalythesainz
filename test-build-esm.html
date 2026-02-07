@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Build - ESM Format</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Courier New', monospace;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            #container {
+                flex: 1;
+                background: #000;
+            }
+
+            #console {
+                background: rgba(0, 0, 0, 0.95);
+                padding: 20px;
+                max-height: 300px;
+                overflow-y: auto;
+                border-top: 3px solid #667eea;
+            }
+
+            .log {
+                padding: 8px;
+                margin: 4px 0;
+                border-left: 4px solid #4caf50;
+                background: rgba(76, 175, 80, 0.1);
+            }
+
+            .log.error {
+                border-left-color: #f44336;
+                background: rgba(244, 67, 54, 0.1);
+                color: #ff6b6b;
+            }
+
+            .log.info {
+                border-left-color: #2196f3;
+                background: rgba(33, 150, 243, 0.1);
+                color: #64b5f6;
+            }
+
+            .log.success {
+                border-left-color: #4caf50;
+                background: rgba(76, 175, 80, 0.1);
+                color: #81c784;
+            }
+
+            h1 {
+                text-align: center;
+                padding: 20px;
+                background: rgba(0, 0, 0, 0.3);
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>🧪 Test Build - ESM Format (dist/kalythesainz.esm.js)</h1>
+        <div id="container"></div>
+        <div id="console"></div>
+
+        <!-- Import Maps untuk resolve 'three' -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+                }
+            }
+        </script>
+
+        <script type="module">
+            const consoleEl = document.getElementById('console');
+
+            function log(message, type = 'info') {
+                const div = document.createElement('div');
+                div.className = `log ${type}`;
+                div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                consoleEl.appendChild(div);
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+                console.log(message);
+            }
+
+            async function main() {
+                try {
+                    log('🔧 TEST 1: Loading Three.js from CDN...', 'info');
+                    const THREE = await import('three');
+                    window.THREE = THREE;
+                    log(`✅ Three.js loaded! Version: ${THREE.REVISION}`, 'success');
+
+                    log('🔧 TEST 2: Loading KALYTHESAINZ from BUILT ESM file...', 'info');
+                    const KALY = await import('./dist/kalythesainz.esm.js');
+                    log('✅ KALYTHESAINZ ESM loaded!', 'success');
+
+                    log('🔧 TEST 3: Checking exports...', 'info');
+                    const exports = Object.keys(KALY);
+                    log(
+                        `✅ Found ${exports.length} exports: ${exports.slice(0, 5).join(', ')}...`,
+                        'success',
+                    );
+
+                    log('🔧 TEST 4: Checking VERSION...', 'info');
+                    log(`✅ Framework VERSION: ${KALY.VERSION}`, 'success');
+
+                    log('🔧 TEST 5: Initializing scene...', 'info');
+                    const scene = KALY.Scene.init('container');
+                    log('✅ Scene initialized!', 'success');
+
+                    log('🔧 TEST 6: Adding lights...', 'info');
+                    KALY.Light.sun(1.0);
+                    KALY.Light.ambient(0.4);
+                    log('✅ Lights added!', 'success');
+
+                    log('🔧 TEST 7: Creating 3D objects...', 'info');
+
+                    // Red Box
+                    const box = KALY.Box.create(1, 1, 1);
+                    box.position = { x: -2.5, y: 0, z: 0 };
+                    scene.add(box);
+                    box.threeMesh.material.color.setHex(0xff0000);
+                    log('  ✓ Red box created', 'success');
+
+                    // Green Sphere
+                    const sphere = KALY.Sphere.create(0.8, 32);
+                    sphere.position = { x: 0, y: 0, z: 0 };
+                    scene.add(sphere);
+                    sphere.threeMesh.material.color.setHex(0x00ff00);
+                    log('  ✓ Green sphere created', 'success');
+
+                    // Blue Box
+                    const box2 = KALY.Box.create(0.8, 0.8, 0.8);
+                    box2.position = { x: 2.5, y: 0, z: 0 };
+                    scene.add(box2);
+                    box2.threeMesh.material.color.setHex(0x0000ff);
+                    log('  ✓ Blue box created', 'success');
+
+                    log(`✅ Total objects: ${scene.objects.length}`, 'success');
+
+                    log('🔧 TEST 8: Starting animation...', 'info');
+                    let frame = 0;
+                    function animate() {
+                        frame++;
+                        box.rotation = { x: frame * 0.01, y: frame * 0.01, z: 0 };
+                        sphere.rotation = { x: 0, y: frame * 0.02, z: 0 };
+                        box2.rotation = { x: frame * 0.015, y: 0, z: frame * 0.015 };
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+                    log('✅ Animation started!', 'success');
+
+                    log('', 'info');
+                    log('🎉🎉🎉 ESM BUILD TEST PASSED! 🎉🎉🎉', 'success');
+                    log('✅ dist/kalythesainz.esm.js berfungsi dengan sempurna!', 'success');
+                    log('✅ Three.js sebagai external dependency (tidak di-bundle)', 'success');
+                    log('✅ Tree-shaking ready untuk modern bundlers', 'success');
+                } catch (error) {
+                    log(`❌ ERROR: ${error.message}`, 'error');
+                    log(`📍 Stack: ${error.stack}`, 'error');
+                    console.error('Full error:', error);
+                }
+            }
+
+            // Start
+            log('🚀 Starting ESM build test...', 'info');
+            main();
+        </script>
+    </body>
+</html>

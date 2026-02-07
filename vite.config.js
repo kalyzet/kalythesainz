@@ -1,5 +1,9 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { readFileSync } from 'fs';
+
+// Read version from package.json
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 export default defineConfig(({ mode }) => {
     const isProd = mode === 'production';
@@ -11,9 +15,9 @@ export default defineConfig(({ mode }) => {
                 name: 'KALYTHESAINZ',
                 fileName: (format) => {
                     if (format === 'es') {
-                        return isProd ? 'kalythesainz.min.js' : 'kalythesainz.js';
+                        return 'kalythesainz.esm.js';
                     }
-                    return isProd ? `kalythesainz.${format}.min.js` : `kalythesainz.${format}.js`;
+                    return 'kalythesainz.umd.min.js';
                 },
                 formats: ['es', 'umd'],
             },
@@ -27,7 +31,7 @@ export default defineConfig(({ mode }) => {
                     preserveModules: false,
                     // Add banner with version and license info
                     banner: `/**
- * KALYTHESAINZ v1.0.0
+ * KALYTHESAINZ v${pkg.version}
  * A simple 3D web framework built on top of Three.js
  * @license MIT
  * @requires three@^0.160.0
@@ -45,7 +49,7 @@ export default defineConfig(({ mode }) => {
                       format: {
                           comments: 'all',
                           preamble: `/**
- * KALYTHESAINZ v1.0.0
+ * KALYTHESAINZ v${pkg.version}
  * A simple 3D web framework built on top of Three.js
  * @license MIT
  * @requires three@^0.160.0
@@ -54,16 +58,13 @@ export default defineConfig(({ mode }) => {
                   }
                 : undefined,
             outDir: 'dist',
-            emptyOutDir: mode === 'production', // Only empty on first build
+            emptyOutDir: true, // Always clean dist folder for predictable builds
         },
         server: {
             port: 3000,
             open: '/ui/index.html',
         },
-        resolve: {
-            alias: {
-                three: 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js',
-            },
-        },
+        // No resolve.alias for 'three' - let users decide where to import from
+        // Framework should not force Three.js source
     };
 });

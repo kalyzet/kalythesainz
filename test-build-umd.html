@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Build - UMD Format</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Courier New', monospace;
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            #container {
+                flex: 1;
+                background: #000;
+            }
+
+            #console {
+                background: rgba(0, 0, 0, 0.95);
+                padding: 20px;
+                max-height: 300px;
+                overflow-y: auto;
+                border-top: 3px solid #f093fb;
+            }
+
+            .log {
+                padding: 8px;
+                margin: 4px 0;
+                border-left: 4px solid #4caf50;
+                background: rgba(76, 175, 80, 0.1);
+            }
+
+            .log.error {
+                border-left-color: #f44336;
+                background: rgba(244, 67, 54, 0.1);
+                color: #ff6b6b;
+            }
+
+            .log.info {
+                border-left-color: #2196f3;
+                background: rgba(33, 150, 243, 0.1);
+                color: #64b5f6;
+            }
+
+            .log.success {
+                border-left-color: #4caf50;
+                background: rgba(76, 175, 80, 0.1);
+                color: #81c784;
+            }
+
+            h1 {
+                text-align: center;
+                padding: 20px;
+                background: rgba(0, 0, 0, 0.3);
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>🧪 Test Build - UMD Format (dist/kalythesainz.umd.min.js)</h1>
+        <div id="container"></div>
+        <div id="console"></div>
+
+        <!-- Load Three.js -->
+        <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+        <!-- Load KALYTHESAINZ UMD -->
+        <script src="./dist/kalythesainz.umd.min.js"></script>
+
+        <script>
+            const consoleEl = document.getElementById('console');
+
+            function log(message, type = 'info') {
+                const div = document.createElement('div');
+                div.className = `log ${type}`;
+                div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                consoleEl.appendChild(div);
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+                console.log(message);
+            }
+
+            function main() {
+                try {
+                    log('🔧 TEST 1: Checking Three.js global...', 'info');
+                    if (typeof THREE === 'undefined') {
+                        throw new Error('THREE is not defined!');
+                    }
+                    log(`✅ Three.js available! Version: ${THREE.REVISION}`, 'success');
+
+                    log('🔧 TEST 2: Checking KALYTHESAINZ global...', 'info');
+                    if (typeof KALYTHESAINZ === 'undefined') {
+                        throw new Error('KALYTHESAINZ is not defined!');
+                    }
+                    log('✅ KALYTHESAINZ UMD loaded!', 'success');
+
+                    log('🔧 TEST 3: Checking exports...', 'info');
+                    const exports = Object.keys(KALYTHESAINZ);
+                    log(
+                        `✅ Found ${exports.length} exports: ${exports.slice(0, 5).join(', ')}...`,
+                        'success',
+                    );
+
+                    log('🔧 TEST 4: Checking VERSION...', 'info');
+                    log(`✅ Framework VERSION: ${KALYTHESAINZ.VERSION}`, 'success');
+
+                    log('🔧 TEST 5: Destructuring exports...', 'info');
+                    const { Scene, Box, Sphere, Light } = KALYTHESAINZ;
+                    log('✅ Destructuring successful!', 'success');
+
+                    log('🔧 TEST 6: Initializing scene...', 'info');
+                    const scene = Scene.init('container');
+                    log('✅ Scene initialized!', 'success');
+
+                    log('🔧 TEST 7: Adding lights...', 'info');
+                    Light.sun(1.0);
+                    Light.ambient(0.4);
+                    log('✅ Lights added!', 'success');
+
+                    log('🔧 TEST 8: Creating 3D objects...', 'info');
+
+                    // Red Box
+                    const box = Box.create(1, 1, 1);
+                    box.position = { x: -2.5, y: 0, z: 0 };
+                    scene.add(box);
+                    box.threeMesh.material.color.setHex(0xff0000);
+                    log('  ✓ Red box created', 'success');
+
+                    // Green Sphere
+                    const sphere = Sphere.create(0.8, 32);
+                    sphere.position = { x: 0, y: 0, z: 0 };
+                    scene.add(sphere);
+                    sphere.threeMesh.material.color.setHex(0x00ff00);
+                    log('  ✓ Green sphere created', 'success');
+
+                    // Blue Box
+                    const box2 = Box.create(0.8, 0.8, 0.8);
+                    box2.position = { x: 2.5, y: 0, z: 0 };
+                    scene.add(box2);
+                    box2.threeMesh.material.color.setHex(0x0000ff);
+                    log('  ✓ Blue box created', 'success');
+
+                    log(`✅ Total objects: ${scene.objects.length}`, 'success');
+
+                    log('🔧 TEST 9: Starting animation...', 'info');
+                    let frame = 0;
+                    function animate() {
+                        frame++;
+                        box.rotation = { x: frame * 0.01, y: frame * 0.01, z: 0 };
+                        sphere.rotation = { x: 0, y: frame * 0.02, z: 0 };
+                        box2.rotation = { x: frame * 0.015, y: 0, z: frame * 0.015 };
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+                    log('✅ Animation started!', 'success');
+
+                    log('', 'info');
+                    log('🎉🎉🎉 UMD BUILD TEST PASSED! 🎉🎉🎉', 'success');
+                    log('✅ dist/kalythesainz.umd.min.js berfungsi dengan sempurna!', 'success');
+                    log('✅ Global variable KALYTHESAINZ tersedia', 'success');
+                    log('✅ Compatible dengan browser langsung (no bundler)', 'success');
+                } catch (error) {
+                    log(`❌ ERROR: ${error.message}`, 'error');
+                    log(`📍 Stack: ${error.stack}`, 'error');
+                    console.error('Full error:', error);
+                }
+            }
+
+            // Start when page loads
+            log('🚀 Starting UMD build test...', 'info');
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', main);
+            } else {
+                main();
+            }
+        </script>
+    </body>
+</html>

@@ -3,6 +3,12 @@
  *
  * Main entry point for the framework
  * Provides declarative API and visual tooling for 3D web development
+ *
+ * ⚠️ INTERNAL USE ONLY
+ * This file is used for development and testing purposes.
+ * When published to npm, users will import from the bundled files:
+ * - dist/kalythesainz.esm.js (ESM format for modern bundlers)
+ * - dist/kalythesainz.umd.min.js (UMD format for CommonJS/browser)
  */
 
 // Core Layer exports

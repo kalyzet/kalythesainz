@@ -758,16 +758,39 @@ Jika Anda tidak ingin build, gunakan import langsung dari source files:
 
 Setelah package dipublish, Anda bisa menggunakan CDN:
 
+**ESM Format (Recommended):**
+
 ```html
 <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
     window.THREE = THREE;
 
+    // Import dari ESM format (mendukung tree-shaking)
     import {
         Scene,
         Box,
         Light,
-    } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.js';
+    } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.esm.js';
+
+    const scene = Scene.init('container');
+    Light.sun();
+    const box = Box.create(1, 1, 1);
+    scene.add(box);
+</script>
+```
+
+**UMD Format (Browser Global):**
+
+```html
+<!-- Load Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<!-- Load KALYTHESAINZ (UMD format) -->
+<script src="https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.umd.min.js"></script>
+
+<script>
+    // Akses via global variable
+    const { Scene, Box, Light } = KALYTHESAINZ;
 
     const scene = Scene.init('container');
     Light.sun();
@@ -780,12 +803,21 @@ Setelah package dipublish, Anda bisa menggunakan CDN:
 
 - **jsDelivr** (Direkomendasikan):
     ```
-    https://cdn.jsdelivr.net/npm/kalythesainz@1.0.0/dist/kalythesainz.min.js
+    ESM: https://cdn.jsdelivr.net/npm/kalythesainz@1.0.0/dist/kalythesainz.esm.js
+    UMD: https://cdn.jsdelivr.net/npm/kalythesainz@1.0.0/dist/kalythesainz.umd.min.js
     ```
 - **unpkg**:
     ```
-    https://unpkg.com/kalythesainz@1.0.0/dist/kalythesainz.min.js
+    ESM: https://unpkg.com/kalythesainz@1.0.0/dist/kalythesainz.esm.js
+    UMD: https://unpkg.com/kalythesainz@1.0.0/dist/kalythesainz.umd.min.js
     ```
+
+**Perbedaan Format:**
+
+| Format | File Size | Tree-Shaking | Use Case                         |
+| ------ | --------- | ------------ | -------------------------------- |
+| ESM    | ~50KB     | ✅ Yes       | Modern browsers, bundlers        |
+| UMD    | ~55KB     | ❌ No        | Legacy browsers, global variable |
 
 ### Metode 2: NPM Installation (Untuk Proyek dengan Build Tools)
 
@@ -805,6 +837,8 @@ import * as THREE from 'three';
 window.THREE = THREE;
 
 // Import KALYTHESAINZ components
+// Modern bundlers akan otomatis menggunakan ESM format (dist/kalythesainz.esm.js)
+// untuk tree-shaking dan optimasi bundle size
 import { Scene, Box, Sphere, Plane, Light } from 'kalythesainz';
 
 // Inisialisasi scene
@@ -815,6 +849,33 @@ Light.sun();
 Light.ambient(0.4);
 
 // Buat objek
+const box = Box.create(1, 1, 1);
+scene.add(box);
+```
+
+**Format yang Digunakan:**
+
+- **ESM (ES Modules)** - `dist/kalythesainz.esm.js`
+    - Untuk modern bundlers (Webpack 5+, Vite, Rollup)
+    - Mendukung tree-shaking (unused code dihapus)
+    - Bundle size lebih kecil
+    - **Recommended untuk production**
+
+- **UMD (Universal Module Definition)** - `dist/kalythesainz.umd.min.js`
+    - Untuk CommonJS (`require()`) di Node.js
+    - Untuk browser langsung dengan `<script>` tag
+    - Universal compatibility
+
+**Node.js dengan CommonJS:**
+
+```javascript
+// Otomatis menggunakan UMD format
+const { Scene, Box, Light } = require('kalythesainz');
+const THREE = require('three');
+window.THREE = THREE;
+
+const scene = Scene.init('container');
+Light.sun();
 const box = Box.create(1, 1, 1);
 scene.add(box);
 ```
@@ -856,7 +917,7 @@ Untuk browser modern yang mendukung import maps:
             {
                 "imports": {
                     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-                    "kalythesainz": "https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.js"
+                    "kalythesainz": "https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.esm.js"
                 }
             }
         </script>
@@ -877,6 +938,7 @@ Untuk browser modern yang mendukung import maps:
             import * as THREE from 'three';
             window.THREE = THREE;
 
+            // Import menggunakan alias dari import map
             import { Scene, Box, Light } from 'kalythesainz';
 
             const scene = Scene.init('container');
@@ -888,6 +950,13 @@ Untuk browser modern yang mendukung import maps:
     </body>
 </html>
 ```
+
+**Keuntungan Import Maps:**
+
+- ✅ Alias yang bersih (`'kalythesainz'` instead of full URL)
+- ✅ Mudah mengganti versi atau CDN provider
+- ✅ Konsisten dengan npm import syntax
+- ✅ Mendukung ESM format untuk tree-shaking
 
 ## 📖 Panduan Lengkap / Complete Guide
 
@@ -1190,7 +1259,7 @@ scene.add(customObj);
                 Light,
                 Serializer,
                 EventBus,
-            } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.js';
+            } from 'https://cdn.jsdelivr.net/npm/kalythesainz@latest/dist/kalythesainz.esm.js';
 
             // Inisialisasi scene
             const scene = Scene.init('container');

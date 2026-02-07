@@ -3,20 +3,15 @@
     "version": "1.0.0",
     "description": "A simple 3D web framework built on top of Three.js with declarative API and visual tooling",
     "type": "module",
-    "main": "index.js",
-    "module": "dist/kalythesainz.min.js",
+    "main": "dist/kalythesainz.umd.min.js",
+    "module": "dist/kalythesainz.esm.js",
     "unpkg": "dist/kalythesainz.umd.min.js",
-    "jsdelivr": "dist/kalythesainz.min.js",
+    "jsdelivr": "dist/kalythesainz.esm.js",
     "exports": {
         ".": {
-            "import": "./index.js",
+            "import": "./dist/kalythesainz.esm.js",
             "require": "./dist/kalythesainz.umd.min.js"
-        },
-        "./core/*": "./core/*.js",
-        "./engine/*": "./engine/*.js",
-        "./objects/*": "./objects/*.js",
-        "./tools/*": "./tools/*.js",
-        "./utils/*": "./utils/*.js"
+        }
     },
     "files": [
         "dist",
@@ -31,9 +26,7 @@
     ],
     "scripts": {
         "dev": "vite",
-        "build": "npm run build:prod && npm run build:dev",
-        "build:prod": "vite build --mode production",
-        "build:dev": "vite build --mode development",
+        "build": "vite build --mode production",
         "test": "jest",
         "test:watch": "jest --watch",
         "prepublishOnly": "npm run build"
@@ -45,7 +38,7 @@
         "framework",
         "visual-tools"
     ],
-    "author": "KALYTHESAINZ Team",
+    "author": "Kalyzet",
     "license": "MIT",
     "peerDependencies": {
         "three": "^0.160.0"
