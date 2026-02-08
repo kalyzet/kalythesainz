@@ -32,9 +32,10 @@ export class Sphere extends Object3D {
      * @param {number} radius - Sphere radius (default: 1)
      * @param {number} segments - Number of segments for both width and height (default: 32)
      * @param {THREE.Material} material - Optional material (default: MeshStandardMaterial)
+     * @param {object} scene - Optional scene instance to add sphere to (SceneInstance or Scene singleton)
      * @returns {Sphere} New Sphere instance
      */
-    static create(radius = 1, segments = 32, material = null) {
+    static create(radius = 1, segments = 32, material = null, scene = null) {
         // Validate parameters
         if (typeof radius !== 'number' || radius <= 0) {
             throw new Error('Radius must be a positive number');
@@ -64,7 +65,41 @@ export class Sphere extends Object3D {
             throw new Error('Material must be a valid Three.js Material');
         }
 
-        return new Sphere(geometry, material, radius, widthSegments, heightSegments);
+        const sphere = new Sphere(geometry, material, radius, widthSegments, heightSegments);
+
+        // Handle scene parameter
+        if (scene) {
+            // Validate scene parameter
+            if (typeof scene.add !== 'function') {
+                throw new Error(
+                    'Scene parameter must be a valid SceneInstance or Scene with an add() method',
+                );
+            }
+            // Add to provided scene instance
+            scene.add(sphere);
+        } else {
+            // Backward compatibility: fall back to singleton scene
+            console.warn(
+                '[DEPRECATED] Sphere.create() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Sphere.create(radius, segments, material, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+
+            // Dynamically import Scene to avoid circular dependency
+            import('../engine/Scene.js')
+                .then(({ Scene }) => {
+                    const singletonScene = Scene.getInstance();
+                    if (singletonScene) {
+                        singletonScene.add(sphere);
+                    }
+                })
+                .catch(() => {
+                    // Silently fail if Scene module is not available
+                    // This allows Sphere to be used standalone
+                });
+        }
+
+        return sphere;
     }
 
     /**

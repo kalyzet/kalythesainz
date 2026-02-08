@@ -33,9 +33,10 @@ export class Box extends Object3D {
      * @param {number} height - Box height (default: 1)
      * @param {number} depth - Box depth (default: 1)
      * @param {THREE.Material} material - Optional material (default: MeshStandardMaterial)
+     * @param {object} scene - Optional scene instance to add box to (SceneInstance or Scene singleton)
      * @returns {Box} New Box instance
      */
-    static create(width = 1, height = 1, depth = 1, material = null) {
+    static create(width = 1, height = 1, depth = 1, material = null, scene = null) {
         // Validate parameters
         if (typeof width !== 'number' || width <= 0) {
             throw new Error('Width must be a positive number');
@@ -64,7 +65,41 @@ export class Box extends Object3D {
             throw new Error('Material must be a valid Three.js Material');
         }
 
-        return new Box(geometry, material, width, height, depth);
+        const box = new Box(geometry, material, width, height, depth);
+
+        // Handle scene parameter
+        if (scene) {
+            // Validate scene parameter
+            if (typeof scene.add !== 'function') {
+                throw new Error(
+                    'Scene parameter must be a valid SceneInstance or Scene with an add() method',
+                );
+            }
+            // Add to provided scene instance
+            scene.add(box);
+        } else {
+            // Backward compatibility: fall back to singleton scene
+            console.warn(
+                '[DEPRECATED] Box.create() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Box.create(width, height, depth, material, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+
+            // Dynamically import Scene to avoid circular dependency
+            import('../engine/Scene.js')
+                .then(({ Scene }) => {
+                    const singletonScene = Scene.getInstance();
+                    if (singletonScene) {
+                        singletonScene.add(box);
+                    }
+                })
+                .catch(() => {
+                    // Silently fail if Scene module is not available
+                    // This allows Box to be used standalone
+                });
+        }
+
+        return box;
     }
 
     /**

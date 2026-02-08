@@ -10,6 +10,9 @@ import { EventBus } from '../core/EventBus.js';
 import { Renderer } from './Renderer.js';
 import { Camera } from './Camera.js';
 import { Light } from './Light.js';
+import { Box } from '../objects/Box.js';
+import { Sphere } from '../objects/Sphere.js';
+import { Plane } from '../objects/Plane.js';
 
 export class SceneInstance {
     #threeScene = null;
@@ -22,6 +25,8 @@ export class SceneInstance {
     #isRendering = false;
     #containerId = null;
     #config = null;
+    #instanceListeners = new Map(); // Instance-scoped event listeners
+    #globalUnsubscribers = []; // Track global event subscriptions for cleanup
 
     /**
      * Create a new SceneInstance
@@ -108,6 +113,190 @@ export class SceneInstance {
      */
     get isRendering() {
         return this.#isRendering;
+    }
+
+    /**
+     * Subscribe to an instance-scoped event
+     * Events are only emitted and received within this scene instance
+     * @param {string} event - Event name
+     * @param {Function} callback - Callback function
+     * @param {object} options - Subscription options
+     * @param {boolean} options.once - Execute callback only once
+     * @param {number} options.priority - Priority for callback execution (higher = earlier)
+     * @returns {Function} Unsubscribe function
+     * @throws {Error} If event name or callback is invalid
+     */
+    on(event, callback, options = {}) {
+        if (this.#isDisposed) {
+            throw new Error('Cannot subscribe to events on disposed scene');
+        }
+
+        if (!event || typeof event !== 'string') {
+            throw new Error('Event name must be a non-empty string');
+        }
+
+        if (typeof callback !== 'function') {
+            throw new Error('Callback must be a function');
+        }
+
+        const { once = false, priority = 0 } = options;
+
+        if (typeof priority !== 'number') {
+            throw new Error('Priority must be a number');
+        }
+
+        // Create listener object
+        const listener = {
+            callback,
+            once,
+            priority,
+            id: this.#generateEventId(),
+        };
+
+        // Add to instance listeners map
+        if (!this.#instanceListeners.has(event)) {
+            this.#instanceListeners.set(event, []);
+        }
+
+        const eventListeners = this.#instanceListeners.get(event);
+        eventListeners.push(listener);
+
+        // Sort by priority (higher priority first)
+        eventListeners.sort((a, b) => b.priority - a.priority);
+
+        // Return unsubscribe function
+        return () => this.off(event, listener.id);
+    }
+
+    /**
+     * Unsubscribe from an instance-scoped event
+     * @param {string} event - Event name
+     * @param {string|Function} callbackOrId - Callback function or listener ID
+     * @returns {boolean} True if successfully unsubscribed
+     */
+    off(event, callbackOrId) {
+        if (!this.#instanceListeners.has(event)) {
+            return false;
+        }
+
+        const eventListeners = this.#instanceListeners.get(event);
+        const initialLength = eventListeners.length;
+
+        // Remove by ID or callback function
+        const filteredListeners = eventListeners.filter((listener) => {
+            if (typeof callbackOrId === 'string') {
+                return listener.id !== callbackOrId;
+            } else if (typeof callbackOrId === 'function') {
+                return listener.callback !== callbackOrId;
+            }
+            return true;
+        });
+
+        this.#instanceListeners.set(event, filteredListeners);
+
+        // Clean up empty event arrays
+        if (filteredListeners.length === 0) {
+            this.#instanceListeners.delete(event);
+        }
+
+        return filteredListeners.length < initialLength;
+    }
+
+    /**
+     * Emit an instance-scoped event
+     * Only listeners registered on this instance will be notified
+     * @param {string} event - Event name
+     * @param {*} data - Event data
+     * @returns {object} Execution results
+     * @throws {Error} If event name is invalid
+     */
+    emit(event, data = null) {
+        if (!event || typeof event !== 'string') {
+            throw new Error('Event name must be a non-empty string');
+        }
+
+        // Create event object
+        const eventObj = {
+            name: event,
+            data,
+            timestamp: Date.now(),
+            scene: this,
+        };
+
+        // Get listeners for this event
+        const listeners = this.#instanceListeners.get(event) || [];
+        const results = {
+            event: eventObj,
+            executed: 0,
+            errors: [],
+        };
+
+        if (listeners.length === 0) {
+            return results;
+        }
+
+        // Execute callbacks
+        for (const listener of listeners) {
+            try {
+                listener.callback(eventObj);
+                results.executed++;
+
+                // Remove one-time listeners
+                if (listener.once) {
+                    this.off(event, listener.id);
+                }
+            } catch (error) {
+                results.errors.push({
+                    listener: listener.id,
+                    error: error.message,
+                    stack: error.stack,
+                });
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Subscribe to a global event (EventBus)
+     * Global events are shared across all scene instances
+     * Automatically unsubscribed when scene is destroyed
+     * @param {string} event - Event name
+     * @param {Function} callback - Callback function
+     * @param {object} options - Subscription options
+     * @returns {Function} Unsubscribe function
+     */
+    onGlobal(event, callback, options = {}) {
+        if (this.#isDisposed) {
+            throw new Error('Cannot subscribe to global events on disposed scene');
+        }
+
+        // Subscribe to global EventBus
+        const unsubscribe = EventBus.subscribe(event, callback, options);
+
+        // Track for cleanup
+        this.#globalUnsubscribers.push(unsubscribe);
+
+        // Return unsubscribe function that also removes from tracking
+        return () => {
+            const index = this.#globalUnsubscribers.indexOf(unsubscribe);
+            if (index !== -1) {
+                this.#globalUnsubscribers.splice(index, 1);
+            }
+            unsubscribe();
+        };
+    }
+
+    /**
+     * Emit a global event (EventBus)
+     * Global events are shared across all scene instances
+     * @param {string} event - Event name
+     * @param {*} data - Event data
+     * @param {object} options - Publishing options
+     * @returns {object|Promise<object>} Execution results
+     */
+    emitGlobal(event, data = null, options = {}) {
+        return EventBus.publish(event, data, options);
     }
 
     /**
@@ -199,6 +388,73 @@ export class SceneInstance {
     }
 
     /**
+     * Create a box and add it to the scene
+     * @param {number} width - Box width (default: 1)
+     * @param {number} height - Box height (default: 1)
+     * @param {number} depth - Box depth (default: 1)
+     * @param {THREE.Material} material - Optional material
+     * @returns {Box} Created box instance
+     * @throws {Error} If scene is disposed
+     */
+    createBox(width = 1, height = 1, depth = 1, material = null) {
+        if (this.#isDisposed) {
+            throw new Error('Cannot create box in disposed scene');
+        }
+
+        // Create box
+        const box = Box.create(width, height, depth, material);
+
+        // Add to scene
+        this.add(box);
+
+        return box;
+    }
+
+    /**
+     * Create a sphere and add it to the scene
+     * @param {number} radius - Sphere radius (default: 1)
+     * @param {number} segments - Number of segments (default: 32)
+     * @param {THREE.Material} material - Optional material
+     * @returns {Sphere} Created sphere instance
+     * @throws {Error} If scene is disposed
+     */
+    createSphere(radius = 1, segments = 32, material = null) {
+        if (this.#isDisposed) {
+            throw new Error('Cannot create sphere in disposed scene');
+        }
+
+        // Create sphere
+        const sphere = Sphere.create(radius, segments, material);
+
+        // Add to scene
+        this.add(sphere);
+
+        return sphere;
+    }
+
+    /**
+     * Create a plane and add it to the scene
+     * @param {number} width - Plane width (default: 1)
+     * @param {number} height - Plane height (default: 1)
+     * @param {THREE.Material} material - Optional material
+     * @returns {Plane} Created plane instance
+     * @throws {Error} If scene is disposed
+     */
+    createPlane(width = 1, height = 1, material = null) {
+        if (this.#isDisposed) {
+            throw new Error('Cannot create plane in disposed scene');
+        }
+
+        // Create plane
+        const plane = Plane.create(width, height, material);
+
+        // Add to scene
+        this.add(plane);
+
+        return plane;
+    }
+
+    /**
      * Add an object to the scene
      * @param {object} object - Object to add (must have threeObject property)
      * @param {string} id - Optional custom ID for the object
@@ -248,7 +504,13 @@ export class SceneInstance {
             addedAt: Date.now(),
         });
 
-        // Emit object added event
+        // Emit instance-scoped object:added event
+        this.emit('object:added', {
+            objectId,
+            object,
+        });
+
+        // Emit global object added event
         EventBus.publish('scene:object-added', {
             scene: this,
             objectId,
@@ -373,13 +635,53 @@ export class SceneInstance {
     }
 
     /**
-     * Add a light to the scene
-     * @param {Light} light - Light instance to add
+     * Add a light to the scene by type and config
+     * @param {string|Light} typeOrLight - Light type ('sun', 'ambient', 'point', 'spot', 'hemisphere') or Light instance
+     * @param {object} config - Light configuration (ignored if typeOrLight is a Light instance)
      * @returns {Light} The added light
+     * @throws {Error} If scene is disposed or invalid light type
      */
-    addLight(light) {
+    addLight(typeOrLight, config = {}) {
         if (this.#isDisposed) {
             throw new Error('Cannot add light to disposed scene');
+        }
+
+        let light;
+
+        // Check if first parameter is already a Light instance
+        if (typeOrLight && typeof typeOrLight === 'object' && typeOrLight.threeLight) {
+            // It's a Light instance, use it directly
+            light = typeOrLight;
+        } else if (typeof typeOrLight === 'string') {
+            // It's a light type string, create the light
+            const type = typeOrLight.toLowerCase();
+
+            switch (type) {
+                case 'sun':
+                case 'directional':
+                    light = Light.sun(config);
+                    break;
+                case 'ambient':
+                    light = Light.ambient(config);
+                    break;
+                case 'point':
+                    // Handle point light with position parameters
+                    const { x = 0, y = 5, z = 0, ...pointConfig } = config;
+                    light = Light.point(x, y, z, pointConfig);
+                    break;
+                case 'spot':
+                    light = Light.spot(config);
+                    break;
+                case 'hemisphere':
+                    light = Light.hemisphere(config);
+                    break;
+                default:
+                    throw new Error(
+                        `Invalid light type '${type}'. Supported types: sun, ambient, point, spot, hemisphere`,
+                    );
+            }
+        } else {
+            throw new Error('First parameter must be a light type string or Light instance');
         }
 
         if (!light || !light.threeLight) {
@@ -473,7 +775,13 @@ export class SceneInstance {
                 this.render();
                 lastTime = currentTime;
 
-                // Emit render frame event
+                // Emit instance-scoped frame:rendered event
+                this.emit('frame:rendered', {
+                    timestamp: currentTime,
+                    fps: 1000 / (currentTime - lastTime),
+                });
+
+                // Emit global render frame event
                 EventBus.publish('scene:frame-rendered', {
                     scene: this,
                     timestamp: currentTime,
@@ -609,6 +917,11 @@ export class SceneInstance {
 
     /**
      * Destroy the scene and clean up all resources
+     * Disposes renderer, camera, all objects, all lights
+     * Removes canvas from DOM
+     * Cancels active render loops
+     * Emits 'scene:destroyed' event
+     * Sets isDisposed flag
      */
     destroy() {
         this.dispose();
@@ -628,11 +941,28 @@ export class SceneInstance {
             timestamp: Date.now(),
         });
 
-        // Stop render loop
+        // Stop render loop (cancel active render loops)
         this.stopRenderLoop();
 
         // Clear all objects and lights
         this.clear(true);
+
+        // Auto-unsubscribe all instance-scoped event listeners
+        this.#instanceListeners.clear();
+
+        // Auto-unsubscribe all global event listeners
+        for (const unsubscribe of this.#globalUnsubscribers) {
+            unsubscribe();
+        }
+        this.#globalUnsubscribers = [];
+
+        // Remove canvas from DOM
+        if (this.#renderer && this.#renderer.canvas) {
+            const canvas = this.#renderer.canvas;
+            if (canvas && canvas.parentNode) {
+                canvas.parentNode.removeChild(canvas);
+            }
+        }
 
         // Dispose renderer
         if (this.#renderer) {
@@ -650,9 +980,21 @@ export class SceneInstance {
         this.#threeScene = null;
         this.#objects.clear();
         this.#lights = [];
+
+        // Emit instance-scoped scene:destroyed event BEFORE setting isDisposed flag
+        this.emit('scene:destroyed', {
+            timestamp: Date.now(),
+        });
+
+        // Set isDisposed flag
         this.#isDisposed = true;
 
-        // Emit disposed event
+        // Emit global scene:destroyed event (as per requirements)
+        EventBus.publish('scene:destroyed', {
+            timestamp: Date.now(),
+        });
+
+        // Also emit disposed event for backward compatibility
         EventBus.publish('scene:disposed', {
             timestamp: Date.now(),
         });
@@ -743,6 +1085,14 @@ export class SceneInstance {
      */
     #generateId() {
         return `obj_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    }
+
+    /**
+     * Generate unique event listener ID
+     * @private
+     */
+    #generateEventId() {
+        return `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     }
 }
 

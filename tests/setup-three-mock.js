@@ -51,13 +51,25 @@ Object.assign(mockThree, {
         getPixelRatio: jest.fn(() => 1),
         shadowMap: { enabled: false },
     })),
-    Scene: jest.fn().mockImplementation(() => ({
-        add: jest.fn(),
-        remove: jest.fn(),
-        children: [],
-        isScene: true,
-        type: 'Scene',
-    })),
+    Scene: jest.fn().mockImplementation(() => {
+        const children = [];
+        return {
+            add: jest.fn(function (object) {
+                if (object && !children.includes(object)) {
+                    children.push(object);
+                }
+            }),
+            remove: jest.fn(function (object) {
+                const index = children.indexOf(object);
+                if (index !== -1) {
+                    children.splice(index, 1);
+                }
+            }),
+            children,
+            isScene: true,
+            type: 'Scene',
+        };
+    }),
     PerspectiveCamera: jest.fn().mockImplementation(() => {
         const position = {
             x: 0,
@@ -199,6 +211,63 @@ Object.assign(mockThree, {
         return {
             intensity: 0.4,
             color,
+            isLight: true,
+        };
+    }),
+    SpotLight: jest.fn().mockImplementation(() => {
+        const position = {
+            x: 0,
+            y: 0,
+            z: 0,
+            set: function (x, y, z) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            },
+            toArray: function () {
+                return [this.x, this.y, this.z];
+            },
+        };
+        const color = new mockThree.Color(0xffffff);
+        return {
+            position,
+            intensity: 1,
+            color,
+            isLight: true,
+            target: {
+                position: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                    set: function (x, y, z) {
+                        this.x = x;
+                        this.y = y;
+                        this.z = z;
+                    },
+                },
+            },
+            castShadow: false,
+            shadow: {
+                camera: {
+                    near: 0.1,
+                    far: 50,
+                    fov: 60,
+                },
+                mapSize: { width: 1024, height: 1024 },
+            },
+            angle: Math.PI / 3,
+            penumbra: 0,
+            decay: 2,
+            distance: 0,
+        };
+    }),
+    HemisphereLight: jest.fn().mockImplementation(() => {
+        const skyColor = new mockThree.Color(0xffffbb);
+        const groundColor = new mockThree.Color(0x080820);
+        return {
+            intensity: 1,
+            color: skyColor,
+            groundColor,
             isLight: true,
         };
     }),
@@ -424,6 +493,8 @@ export const {
     DirectionalLight,
     PointLight,
     AmbientLight,
+    SpotLight,
+    HemisphereLight,
     BoxGeometry,
     SphereGeometry,
     PlaneGeometry,

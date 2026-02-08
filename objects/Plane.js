@@ -35,9 +35,10 @@ export class Plane extends Object3D {
      * @param {number} width - Plane width (default: 1)
      * @param {number} height - Plane height (default: 1)
      * @param {THREE.Material} material - Optional material (default: MeshStandardMaterial)
+     * @param {object} scene - Optional scene instance to add plane to (SceneInstance or Scene singleton)
      * @returns {Plane} New Plane instance
      */
-    static create(width = 1, height = 1, material = null) {
+    static create(width = 1, height = 1, material = null, scene = null) {
         // Validate parameters
         if (typeof width !== 'number' || width <= 0) {
             throw new Error('Width must be a positive number');
@@ -66,7 +67,41 @@ export class Plane extends Object3D {
             throw new Error('Material must be a valid Three.js Material');
         }
 
-        return new Plane(geometry, material, width, height, widthSegments, heightSegments);
+        const plane = new Plane(geometry, material, width, height, widthSegments, heightSegments);
+
+        // Handle scene parameter
+        if (scene) {
+            // Validate scene parameter
+            if (typeof scene.add !== 'function') {
+                throw new Error(
+                    'Scene parameter must be a valid SceneInstance or Scene with an add() method',
+                );
+            }
+            // Add to provided scene instance
+            scene.add(plane);
+        } else {
+            // Backward compatibility: fall back to singleton scene
+            console.warn(
+                '[DEPRECATED] Plane.create() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Plane.create(width, height, material, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+
+            // Dynamically import Scene to avoid circular dependency
+            import('../engine/Scene.js')
+                .then(({ Scene }) => {
+                    const singletonScene = Scene.getInstance();
+                    if (singletonScene) {
+                        singletonScene.add(plane);
+                    }
+                })
+                .catch(() => {
+                    // Silently fail if Scene module is not available
+                    // This allows Plane to be used standalone
+                });
+        }
+
+        return plane;
     }
 
     /**

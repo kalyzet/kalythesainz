@@ -29,12 +29,30 @@ global.afterAll = afterAll;
 global.THREE = mockThree;
 
 // Mock DOM elements
+let rafId = 0;
+const rafCallbacks = new Map();
+
 Object.defineProperty(window, 'requestAnimationFrame', {
-    value: jest.fn((cb) => setTimeout(cb, 16)),
+    value: (cb) => {
+        const id = ++rafId;
+        const timeoutId = setTimeout(() => {
+            if (rafCallbacks.has(id)) {
+                rafCallbacks.delete(id);
+                cb(Date.now());
+            }
+        }, 16);
+        rafCallbacks.set(id, timeoutId);
+        return id;
+    },
 });
 
 Object.defineProperty(window, 'cancelAnimationFrame', {
-    value: jest.fn(),
+    value: (id) => {
+        if (rafCallbacks.has(id)) {
+            clearTimeout(rafCallbacks.get(id));
+            rafCallbacks.delete(id);
+        }
+    },
 });
 
 // Mock canvas context

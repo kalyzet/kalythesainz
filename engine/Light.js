@@ -280,16 +280,15 @@ export class Light {
      * @param {Array} config.position - Light position (default: [10, 10, 5])
      * @param {Array} config.target - Light target position (default: [0, 0, 0])
      * @param {boolean} config.castShadow - Whether to cast shadows (default: true)
+     * @param {SceneInstance} scene - Optional scene instance to add light to
      * @returns {Light} Light instance configured as sun light
      */
-    static sun(config = {}) {
-        const {
-            intensity = 1,
-            color = 0xffffff,
-            position = [10, 10, 5],
-            target = [0, 0, 0],
-            castShadow = true,
-        } = config;
+    static sun(config = {}, scene = null) {
+        const intensity = config.intensity !== undefined ? config.intensity : 1;
+        const color = config.color !== undefined ? config.color : 0xffffff;
+        const position = config.position !== undefined ? config.position : [10, 10, 5];
+        const target = config.target !== undefined ? config.target : [0, 0, 0];
+        const castShadow = config.castShadow !== undefined ? config.castShadow : true;
 
         const directionalLight = new THREE.DirectionalLight(color, intensity);
         directionalLight.position.set(position[0], position[1], position[2]);
@@ -308,7 +307,20 @@ export class Light {
             directionalLight.shadow.camera.bottom = -10;
         }
 
-        return new Light(directionalLight, 'directional');
+        const light = new Light(directionalLight, 'directional');
+
+        // Add to scene if provided
+        if (scene) {
+            scene.addLight(light);
+        } else {
+            console.warn(
+                '[DEPRECATED] Light.sun() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Light.sun(config, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+        }
+
+        return light;
     }
 
     /**
@@ -316,13 +328,27 @@ export class Light {
      * @param {object} config - Configuration options
      * @param {number} config.intensity - Light intensity (default: 0.4)
      * @param {number|string} config.color - Light color (default: 0xffffff)
+     * @param {SceneInstance} scene - Optional scene instance to add light to
      * @returns {Light} Light instance configured as ambient light
      */
-    static ambient(config = {}) {
+    static ambient(config = {}, scene = null) {
         const { intensity = 0.4, color = 0xffffff } = config;
 
         const ambientLight = new THREE.AmbientLight(color, intensity);
-        return new Light(ambientLight, 'ambient');
+        const light = new Light(ambientLight, 'ambient');
+
+        // Add to scene if provided
+        if (scene) {
+            scene.addLight(light);
+        } else {
+            console.warn(
+                '[DEPRECATED] Light.ambient() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Light.ambient(config, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+        }
+
+        return light;
     }
 
     /**
@@ -336,15 +362,19 @@ export class Light {
      * @param {number} config.distance - Light distance (default: 0 - no limit)
      * @param {number} config.decay - Light decay (default: 2)
      * @param {boolean} config.castShadow - Whether to cast shadows (default: false)
+     * @param {SceneInstance} scene - Optional scene instance to add light to
      * @returns {Light} Light instance configured as point light
      */
-    static point(x = 0, y = 5, z = 0, config = {}) {
+    static point(x = 0, y = 5, z = 0, config = {}, scene = null) {
         // Handle both old signature (x, y, z, intensity, color) and new config object
         let finalConfig;
+        let finalScene = scene;
+
         if (typeof config === 'number') {
-            // Old signature: point(x, y, z, intensity, color)
+            // Old signature: point(x, y, z, intensity, color, scene)
             const intensity = config;
             const color = arguments[4] || 0xffffff;
+            finalScene = arguments[5] || null;
             finalConfig = { intensity, color };
         } else {
             finalConfig = config;
@@ -370,7 +400,20 @@ export class Light {
             pointLight.shadow.camera.far = distance || 50;
         }
 
-        return new Light(pointLight, 'point');
+        const light = new Light(pointLight, 'point');
+
+        // Add to scene if provided
+        if (finalScene) {
+            finalScene.addLight(light);
+        } else {
+            console.warn(
+                '[DEPRECATED] Light.point() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Light.point(x, y, z, config, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+        }
+
+        return light;
     }
 
     /**
@@ -387,9 +430,10 @@ export class Light {
      * @param {number} config.penumbra - Spotlight penumbra (default: 0)
      * @param {number} config.decay - Light decay (default: 2)
      * @param {boolean} config.castShadow - Whether to cast shadows (default: true)
+     * @param {SceneInstance} scene - Optional scene instance to add light to
      * @returns {Light} Light instance configured as spot light
      */
-    static spot(config = {}) {
+    static spot(config = {}, scene = null) {
         const {
             x = 0,
             y = 10,
@@ -418,7 +462,20 @@ export class Light {
             spotLight.shadow.camera.fov = (angle * 180) / Math.PI;
         }
 
-        return new Light(spotLight, 'spot');
+        const light = new Light(spotLight, 'spot');
+
+        // Add to scene if provided
+        if (scene) {
+            scene.addLight(light);
+        } else {
+            console.warn(
+                '[DEPRECATED] Light.spot() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Light.spot(config, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+        }
+
+        return light;
     }
 
     /**
@@ -427,13 +484,27 @@ export class Light {
      * @param {number|string} config.skyColor - Sky color (default: 0xffffbb)
      * @param {number|string} config.groundColor - Ground color (default: 0x080820)
      * @param {number} config.intensity - Light intensity (default: 1)
+     * @param {SceneInstance} scene - Optional scene instance to add light to
      * @returns {Light} Light instance configured as hemisphere light
      */
-    static hemisphere(config = {}) {
+    static hemisphere(config = {}, scene = null) {
         const { skyColor = 0xffffbb, groundColor = 0x080820, intensity = 1 } = config;
 
         const hemisphereLight = new THREE.HemisphereLight(skyColor, groundColor, intensity);
-        return new Light(hemisphereLight, 'hemisphere');
+        const light = new Light(hemisphereLight, 'hemisphere');
+
+        // Add to scene if provided
+        if (scene) {
+            scene.addLight(light);
+        } else {
+            console.warn(
+                '[DEPRECATED] Light.hemisphere() called without scene parameter. ' +
+                    'Pass a scene instance as the last parameter: Light.hemisphere(config, scene). ' +
+                    'See migration guide: https://github.com/kalythesainz/kalythesainz#migration-guide',
+            );
+        }
+
+        return light;
     }
 
     /**

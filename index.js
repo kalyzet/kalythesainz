@@ -26,12 +26,14 @@ export {
 } from './core/PluginInterfaces.js';
 
 // Engine Layer exports
-export { Scene } from './engine/Scene.js';
-export { SceneInstance } from './engine/SceneInstance.js';
-export { Renderer } from './engine/Renderer.js';
-export { Camera } from './engine/Camera.js';
-export { Light } from './engine/Light.js';
-export { Object3D } from './engine/Object3D.js';
+import { Scene } from './engine/Scene.js';
+import { SceneInstance } from './engine/SceneInstance.js';
+import { Renderer } from './engine/Renderer.js';
+import { Camera } from './engine/Camera.js';
+import { Light } from './engine/Light.js';
+import { Object3D } from './engine/Object3D.js';
+
+export { Scene, SceneInstance, Renderer, Camera, Light, Object3D };
 
 // Objects Layer exports
 export { Box } from './objects/Box.js';
@@ -49,6 +51,40 @@ export { ThreeJsIntegration } from './utils/ThreeJsIntegration.js';
 
 // Framework version
 export const VERSION = '1.0.0';
+
+/**
+ * Create a new scene instance (Instance-based API)
+ * This is the recommended way to create scenes in v2.x
+ *
+ * @param {string} containerId - DOM container ID where the scene will be rendered
+ * @param {object} config - Scene configuration options
+ * @param {object} config.renderer - Renderer configuration (antialias, alpha, etc.)
+ * @param {object} config.camera - Camera configuration (type, fov, near, far, etc.)
+ * @param {object|false} config.lights - Light configuration or false to disable default lights
+ * @param {boolean} config.autoStart - Whether to start render loop automatically (default: true)
+ * @returns {SceneInstance} New scene instance
+ * @throws {Error} If containerId is invalid or configuration is invalid
+ *
+ * @example
+ * // Create a scene with default settings
+ * const scene = createScene('my-container');
+ *
+ * @example
+ * // Create a scene with custom configuration
+ * const scene = createScene('my-container', {
+ *   camera: { fov: 60, type: 'perspective' },
+ *   lights: false, // Disable default lights
+ *   autoStart: true
+ * });
+ *
+ * @example
+ * // Create multiple independent scenes
+ * const scene1 = createScene('container-1');
+ * const scene2 = createScene('container-2');
+ */
+export function createScene(containerId, config = {}) {
+    return new SceneInstance(containerId, config);
+}
 
 // Quick start helper
 export function quickStart(containerId, config = {}) {
