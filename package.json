@@ -1,10 +1,11 @@
 {
     "name": "kalythesainz",
-    "version": "1.0.1",
+    "version": "2.0.0",
     "description": "A simple 3D web framework built on top of Three.js with declarative API and visual tooling",
     "type": "module",
     "main": "dist/kalythesainz.umd.min.js",
     "module": "dist/kalythesainz.esm.js",
+    "types": "index.d.ts",
     "unpkg": "dist/kalythesainz.umd.min.js",
     "jsdelivr": "dist/kalythesainz.esm.js",
     "exports": {
@@ -21,6 +22,7 @@
         "tools",
         "utils",
         "index.js",
+        "index.d.ts",
         "README.md",
         "LICENSE"
     ],

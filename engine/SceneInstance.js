@@ -24,7 +24,7 @@ export class SceneInstance {
     #renderLoop = null;
     #isRendering = false;
     #containerId = null;
-    #config = null;
+    #config = null; // Store instance-specific configuration
     #instanceListeners = new Map(); // Instance-scoped event listeners
     #globalUnsubscribers = []; // Track global event subscriptions for cleanup
 
@@ -33,9 +33,16 @@ export class SceneInstance {
      * @param {string} containerId - DOM container ID
      * @param {object} config - Scene configuration
      * @param {object} config.renderer - Renderer configuration
+     * @param {boolean} config.renderer.antialias - Enable antialiasing (default: true)
+     * @param {boolean} config.renderer.alpha - Enable alpha channel (default: false)
+     * @param {string} config.renderer.powerPreference - Power preference (default: 'high-performance')
      * @param {object} config.camera - Camera configuration
-     * @param {object} config.lights - Lighting configuration
-     * @param {boolean} config.autoStart - Whether to start render loop automatically
+     * @param {string} config.camera.type - Camera type ('perspective' or 'orthographic', default: 'perspective')
+     * @param {number} config.camera.fov - Field of view for perspective camera (default: 75)
+     * @param {number} config.camera.near - Near clipping plane (default: 0.1)
+     * @param {number} config.camera.far - Far clipping plane (default: 1000)
+     * @param {object|false} config.lights - Lighting configuration or false to disable default lights
+     * @param {boolean} config.autoStart - Whether to start render loop automatically (default: true)
      * @throws {Error} If invalid configuration
      */
     constructor(containerId, config = {}) {
@@ -44,17 +51,27 @@ export class SceneInstance {
             throw new Error('containerId must be a non-empty string');
         }
 
-        this.#containerId = containerId;
-        this.#config = { ...config };
+        // Validate that container exists in DOM
+        if (typeof document !== 'undefined') {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                throw new Error(`Container element with ID '${containerId}' not found in DOM`);
+            }
+        }
 
+        this.#containerId = containerId;
+
+        // Validate and store configuration with defaults
         this.#validateConfig(config);
-        this.#initializeScene(config);
+        this.#config = this.#normalizeConfig(config);
+
+        this.#initializeScene(this.#config);
         this.#setupEventListeners();
 
         // Emit scene created event
         EventBus.publish('scene:created', {
             scene: this,
-            config,
+            config: this.#config,
             timestamp: Date.now(),
         });
     }
@@ -113,6 +130,15 @@ export class SceneInstance {
      */
     get isRendering() {
         return this.#isRendering;
+    }
+
+    /**
+     * Get the scene configuration
+     * Returns a copy to prevent external modification
+     * @returns {object} Scene configuration
+     */
+    get config() {
+        return JSON.parse(JSON.stringify(this.#config));
     }
 
     /**
@@ -944,6 +970,12 @@ export class SceneInstance {
         // Stop render loop (cancel active render loops)
         this.stopRenderLoop();
 
+        // Stop auto-sync interval if running
+        if (this._syncInterval) {
+            clearInterval(this._syncInterval);
+            this._syncInterval = null;
+        }
+
         // Clear all objects and lights
         this.clear(true);
 
@@ -976,10 +1008,24 @@ export class SceneInstance {
             this.#camera = null;
         }
 
-        // Clear references
-        this.#threeScene = null;
+        // Dispose Three.js scene
+        if (this.#threeScene) {
+            // Clear all children from Three.js scene
+            while (this.#threeScene.children.length > 0) {
+                this.#threeScene.remove(this.#threeScene.children[0]);
+            }
+            this.#threeScene = null;
+        }
+
+        // Clear internal maps and arrays
         this.#objects.clear();
         this.#lights = [];
+
+        // Clear config reference
+        this.#config = null;
+
+        // Clear container ID reference
+        this.#containerId = null;
 
         // Emit instance-scoped scene:destroyed event BEFORE setting isDisposed flag
         this.emit('scene:destroyed', {
@@ -1003,15 +1049,130 @@ export class SceneInstance {
     /**
      * Validate configuration
      * @private
+     * @throws {Error} If configuration is invalid
      */
     #validateConfig(config) {
         if (config && typeof config !== 'object') {
             throw new Error('Configuration must be an object');
         }
 
+        // Validate autoStart
         if (config.autoStart !== undefined && typeof config.autoStart !== 'boolean') {
-            throw new Error('autoStart must be a boolean');
+            throw new Error('config.autoStart must be a boolean');
         }
+
+        // Validate renderer config
+        if (config.renderer !== undefined) {
+            if (typeof config.renderer !== 'object') {
+                throw new Error('config.renderer must be an object');
+            }
+
+            if (
+                config.renderer.antialias !== undefined &&
+                typeof config.renderer.antialias !== 'boolean'
+            ) {
+                throw new Error('config.renderer.antialias must be a boolean');
+            }
+
+            if (config.renderer.alpha !== undefined && typeof config.renderer.alpha !== 'boolean') {
+                throw new Error('config.renderer.alpha must be a boolean');
+            }
+
+            if (config.renderer.powerPreference !== undefined) {
+                const validPreferences = ['default', 'high-performance', 'low-power'];
+                if (!validPreferences.includes(config.renderer.powerPreference)) {
+                    throw new Error(
+                        `config.renderer.powerPreference must be one of: ${validPreferences.join(', ')}`,
+                    );
+                }
+            }
+        }
+
+        // Validate camera config
+        if (config.camera !== undefined) {
+            if (typeof config.camera !== 'object') {
+                throw new Error('config.camera must be an object');
+            }
+
+            if (config.camera.type !== undefined) {
+                const validTypes = ['perspective', 'orthographic'];
+                if (!validTypes.includes(config.camera.type)) {
+                    throw new Error(`config.camera.type must be one of: ${validTypes.join(', ')}`);
+                }
+            }
+
+            if (config.camera.fov !== undefined && typeof config.camera.fov !== 'number') {
+                throw new Error('config.camera.fov must be a number');
+            }
+
+            if (config.camera.near !== undefined && typeof config.camera.near !== 'number') {
+                throw new Error('config.camera.near must be a number');
+            }
+
+            if (config.camera.far !== undefined && typeof config.camera.far !== 'number') {
+                throw new Error('config.camera.far must be a number');
+            }
+        }
+
+        // Validate lights config
+        if (config.lights !== undefined && config.lights !== false) {
+            if (typeof config.lights !== 'object') {
+                throw new Error('config.lights must be an object or false');
+            }
+        }
+    }
+
+    /**
+     * Normalize configuration with defaults
+     * @private
+     * @returns {object} Normalized configuration
+     */
+    #normalizeConfig(config) {
+        const normalized = {
+            renderer: {
+                antialias: true,
+                alpha: false,
+                powerPreference: 'high-performance',
+            },
+            camera: {
+                type: 'perspective',
+                fov: 75,
+                near: 0.1,
+                far: 1000,
+            },
+            lights: {},
+            autoStart: true,
+        };
+
+        // Merge renderer config, filtering out undefined values
+        if (config.renderer && typeof config.renderer === 'object') {
+            Object.keys(config.renderer).forEach((key) => {
+                if (config.renderer[key] !== undefined) {
+                    normalized.renderer[key] = config.renderer[key];
+                }
+            });
+        }
+
+        // Merge camera config, filtering out undefined values
+        if (config.camera && typeof config.camera === 'object') {
+            Object.keys(config.camera).forEach((key) => {
+                if (config.camera[key] !== undefined) {
+                    normalized.camera[key] = config.camera[key];
+                }
+            });
+        }
+
+        // Handle lights config
+        if (config.lights !== undefined) {
+            normalized.lights = config.lights;
+        }
+
+        // Handle autoStart
+        if (config.autoStart !== undefined) {
+            normalized.autoStart = config.autoStart;
+        }
+
+        return normalized;
     }
 
     /**
@@ -1028,16 +1189,19 @@ export class SceneInstance {
             this.#threeScene.background = new THREE.Color(sceneConfig.background);
         }
 
-        // Create renderer
+        // Create renderer with instance config
         this.#renderer = new Renderer({
             containerId: this.#containerId,
             ...config.renderer,
         });
 
-        // Create camera
-        const cameraType = config.camera?.type || 'perspective';
+        // Create camera with instance config
+        const cameraType = config.camera.type;
         this.#camera = new Camera(cameraType, {
             aspect: this.#renderer.size.width / this.#renderer.size.height,
+            fov: config.camera.fov,
+            near: config.camera.near,
+            far: config.camera.far,
             ...config.camera,
         });
 
@@ -1047,7 +1211,7 @@ export class SceneInstance {
 
         // Create default lighting if specified
         if (config.lights !== false) {
-            const lightConfig = config.lights || {};
+            const lightConfig = config.lights;
             const defaultLights = Light.basicSetup(lightConfig);
             for (const light of defaultLights) {
                 this.addLight(light);
@@ -1055,7 +1219,7 @@ export class SceneInstance {
         }
 
         // Auto-start render loop if specified
-        if (config.autoStart !== false) {
+        if (config.autoStart) {
             this.startRenderLoop();
         }
     }

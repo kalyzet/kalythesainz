@@ -286,7 +286,7 @@ describe('Lighting Preset Consistency Properties', () => {
                         intensity: fc.float({ min: 0, max: 5 }),
                         color: fc.integer({ min: 0x000000, max: 0xffffff }),
                         distance: fc.float({ min: 0, max: 100 }),
-                        angle: fc.float({ min: 0.1, max: Math.PI / 2 }),
+                        angle: fc.float({ min: Math.fround(0.1), max: Math.fround(Math.PI / 2) }),
                         penumbra: fc.float({ min: 0, max: 1 }),
                         decay: fc.float({ min: 1, max: 3 }),
                         castShadow: fc.boolean(),
@@ -341,7 +341,7 @@ describe('Lighting Preset Consistency Properties', () => {
                             }),
                         }),
                         ambientConfig: fc.record({
-                            intensity: fc.float({ min: 0.1, max: 1 }),
+                            intensity: fc.float({ min: Math.fround(0.1), max: 1 }),
                         }),
                         pointConfig: fc.record({
                             x: fc.float({ min: -5, max: 5 }),
@@ -410,7 +410,7 @@ describe('Lighting Preset Consistency Properties', () => {
                             }),
                         }),
                         ambient: fc.record({
-                            intensity: fc.float({ min: 0.1, max: 1 }),
+                            intensity: fc.float({ min: Math.fround(0.1), max: 1 }),
                             color: fc.integer({ min: 0x000000, max: 0xffffff }),
                         }),
                     }),
@@ -449,10 +449,10 @@ describe('Lighting Preset Consistency Properties', () => {
                             y: fc.float({ min: 5, max: 15 }),
                         }),
                         fill: fc.record({
-                            intensity: fc.float({ min: 0.2, max: 1 }),
+                            intensity: fc.float({ min: Math.fround(0.2), max: 1 }),
                         }),
                         rim: fc.record({
-                            intensity: fc.float({ min: 0.1, max: 0.8 }),
+                            intensity: fc.float({ min: Math.fround(0.1), max: Math.fround(0.8) }),
                         }),
                     }),
                     (config) => {

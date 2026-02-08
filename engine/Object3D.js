@@ -98,7 +98,7 @@ export class Object3D {
      */
     set tags(value) {
         if (!Array.isArray(value)) {
-            throw new Error('Tags must be an array');
+            throw new Error('Tags must be an array of strings');
         }
 
         const oldTags = this.#tags;

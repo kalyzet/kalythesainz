@@ -33,7 +33,26 @@ import { Camera } from './engine/Camera.js';
 import { Light } from './engine/Light.js';
 import { Object3D } from './engine/Object3D.js';
 
-export { Scene, SceneInstance, Renderer, Camera, Light, Object3D };
+// Export SceneInstance as the primary scene API
+export { SceneInstance, Renderer, Camera, Light, Object3D };
+
+/**
+ * @deprecated Scene.init() is deprecated in v2.x. Use createScene() instead.
+ *
+ * The Scene class provides backward compatibility with v1.x singleton API.
+ * This API will be removed in v3.0.0.
+ *
+ * Migration guide:
+ * - Old: const scene = Scene.init('container');
+ * - New: const scene = createScene('container');
+ *
+ * Benefits of the new API:
+ * - Multiple independent scenes
+ * - Better React compatibility
+ * - Clearer lifecycle management
+ * - No global state
+ */
+export { Scene };
 
 // Objects Layer exports
 export { Box } from './objects/Box.js';
@@ -50,11 +69,15 @@ export { Serializer } from './utils/Serializer.js';
 export { ThreeJsIntegration } from './utils/ThreeJsIntegration.js';
 
 // Framework version
-export const VERSION = '1.0.0';
+export const VERSION = '2.0.0';
 
 /**
  * Create a new scene instance (Instance-based API)
- * This is the recommended way to create scenes in v2.x
+ *
+ * ✨ RECOMMENDED API - This is the modern way to create scenes in v2.x
+ *
+ * This function creates an independent scene instance that can coexist with other scenes.
+ * Each scene has its own renderer, camera, objects, and lifecycle.
  *
  * @param {string} containerId - DOM container ID where the scene will be rendered
  * @param {object} config - Scene configuration options
@@ -81,12 +104,27 @@ export const VERSION = '1.0.0';
  * // Create multiple independent scenes
  * const scene1 = createScene('container-1');
  * const scene2 = createScene('container-2');
+ *
+ * @example
+ * // Use instance methods to add objects
+ * const scene = createScene('my-container');
+ * const box = scene.createBox(1, 1, 1);
+ * const light = scene.addLight('sun', { intensity: 1.5 });
  */
 export function createScene(containerId, config = {}) {
     return new SceneInstance(containerId, config);
 }
 
-// Quick start helper
+/**
+ * @deprecated quickStart() is deprecated in v2.x. Use createScene() with instance methods instead.
+ *
+ * Quick start helper for backward compatibility.
+ * This function will be removed in v3.0.0.
+ *
+ * Migration guide:
+ * - Old: const scene = quickStart('container');
+ * - New: const scene = createScene('container'); scene.addLight('sun');
+ */
 export function quickStart(containerId, config = {}) {
     const scene = Scene.init(containerId, config);
     Light.sun();

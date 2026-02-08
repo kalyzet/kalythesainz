@@ -67,9 +67,9 @@ describe('Scene Serialization Property Tests', () => {
                             // Box objects
                             fc.record({
                                 type: fc.constant('Box'),
-                                width: fc.float({ min: 0.1, max: 10 }),
-                                height: fc.float({ min: 0.1, max: 10 }),
-                                depth: fc.float({ min: 0.1, max: 10 }),
+                                width: fc.float({ min: Math.fround(0.1), max: 10 }),
+                                height: fc.float({ min: Math.fround(0.1), max: 10 }),
+                                depth: fc.float({ min: Math.fround(0.1), max: 10 }),
                                 name: fc.string({ minLength: 1, maxLength: 50 }),
                                 position: fc.array(fc.float({ min: -100, max: 100 }), {
                                     minLength: 3,
@@ -417,19 +417,25 @@ describe('Scene Serialization Property Tests', () => {
                 }),
                 (sceneConfig) => {
                     try {
+                        // Ensure we have a fresh scene
+                        if (Scene.isInitialized()) {
+                            Scene.destroy();
+                        }
+                        const testScene = Scene.init('test-container', { autoStart: false });
+
                         // Clear the scene
-                        scene.clear(true);
+                        testScene.clear(true);
 
                         // Update camera
-                        scene.camera.setPosition(
+                        testScene.camera.setPosition(
                             sceneConfig.camera.position[0],
                             sceneConfig.camera.position[1],
                             sceneConfig.camera.position[2],
                         );
-                        scene.camera.setFov(sceneConfig.camera.fov);
+                        testScene.camera.setFov(sceneConfig.camera.fov);
 
                         // Serialize the empty scene
-                        const serializedData = Serializer.serializeScene(scene);
+                        const serializedData = Serializer.serializeScene(testScene);
 
                         // Validate serialized data
                         expect(Serializer.validateData(serializedData)).toBe(true);
@@ -486,9 +492,9 @@ describe('Scene Serialization Property Tests', () => {
                     objects: fc.array(
                         fc.record({
                             type: fc.constant('Box'),
-                            width: fc.float({ min: 0.1, max: 5 }),
-                            height: fc.float({ min: 0.1, max: 5 }),
-                            depth: fc.float({ min: 0.1, max: 5 }),
+                            width: fc.float({ min: Math.fround(0.1), max: 5 }),
+                            height: fc.float({ min: Math.fround(0.1), max: 5 }),
+                            depth: fc.float({ min: Math.fround(0.1), max: 5 }),
                             name: fc.string({ minLength: 1, maxLength: 30 }),
                             tags: fc.array(fc.string({ minLength: 1, maxLength: 10 }), {
                                 maxLength: 3,
